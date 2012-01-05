@@ -11,6 +11,8 @@ To start hacking, you need a few things:
 * Diablo III server emulator
  - https://github.com/mooege/mooege
 
+### Instructions ###
+
 1. Download, install, and run the launcher which will download about 4GB of 
 game assets and updates. Then close the app.
 2. Clone the repo and switch to the '8101' branch.
