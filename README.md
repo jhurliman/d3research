@@ -1,9 +1,9 @@
-== Working ==
+## Working ##
 
 * Enumerate RActors
 * Parse basic RActor information (GUID, model name, position/direction)
 
-== TODO ==
+## TODO ##
 
 * Enumerate the attributes/stats for each actor
 ![Stat enumeration example](http://i51.tinypic.com/jz6teu.png)
