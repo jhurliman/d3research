@@ -12,7 +12,7 @@
 * Fetch player attributes (hitpoints, experience, etc)
 * Enumerate scenes
 * Enumerate navcells in scenes and build a navigation map
-![Navcell enumeration example](http://www.ownedcore.com/forums/attachments/diablo-3/diablo-3-bots-programs/diablo-3-memory-editing/5421d1323621387-screenshot-thread-diablo-3-ds0inrme.jpg)
+![Navcell enumeration example](http://dl.dropbox.com/u/6736045/navcell-list.jpg)
 ![Navcell display example](http://dl.dropbox.com/u/4381027/bssknuul.jpg)
 * Walk to location
 * Attack enemy/object, interact with NPC, open chest/door, etc
