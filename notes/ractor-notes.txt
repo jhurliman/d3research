@@ -1,0 +1,96 @@
+<jhurliman> chuanhsing, what do you think would be the easiest way of classifying an RActor? npc, enemy, UI element, etc
+<SvenEvert> jhurliman: hmm, I think I have that done somewhere, let me check
+<jhurliman> cool thanks
+<SvenEvert> jhurliman: if you check how the actors are iterated in the debugview with index 20
+<SvenEvert> it looks something like this:
+
+  if ( tentative_iterateActors(ActorMapOrList, (_WORD *)&v43 + 2, (Actor *)&actorPtr) )
+  {
+    do
+    {
+      if ( actorPtr->unk_hero_or_unit_GUID == -1 )
+      {
+        if ( *(_DWORD *)&actorPtr->unk3[160] == -1 )
+          ++nClientOnly;
+        else
+          ++nEnvironment;
+      }
+      else
+      {
+        ++nACD;
+      }
+      ++nRActors;
+    }
+    while ( tentative_iterateActors(ActorMapOrListAlso, (_WORD *)&v43 + 2, (Actor *)&actorPtr) );
+  }
+  sub_E09890((int)&v45, "RActors : %d\n", nRActors);
+  v3 = (void *)sub_E09830(&v45);
+  sub_E09C20(v3);
+  sub_E09890((int)&v45, "     ACD-Based: %d\n", nACD);
+  v4 = (void *)sub_E09830(&v45);
+  sub_E09C20(v4);
+  sub_E09890((int)&v45, "     Environment: %d\n", nEnvironment);
+  v5 = (void *)sub_E09830(&v45);
+  sub_E09C20(v5);
+  sub_E09890((int)&v45, "     Other Client-Only: %d\n", nClientOnly);
+  v6 = (void *)sub_E09830(&v45);
+  sub_E09C20(v6);
+  v7 = getRActorMainListSize();
+  sub_E09890((int)&v45, "RActors in Main List: %d\n", v7);
+  v8 = (void *)sub_E09830(&v45);
+  sub_E09C20(v8);
+  sub_E09C20("\n");
+
+<SvenEvert> and if you check my old definitions of the actor struct from:
+
+struct ActorMovement
+{
+  actMov_vTable *vTable;
+  BYTE unk1[48];
+  int isMoving;
+  int pathComplexity;
+  int targetX;
+  int targetY;
+  int targetZ;
+  BYTE unk2[32];
+};
+
+
+struct Actor
+{
+  signed int GUID;
+  signed int unkGUID_hero;
+  char modelName[140];
+  int unk2;
+  float normDirX;
+  float normDirY;
+  float x1;
+  float y1;
+  float z1;
+  float x2;
+  float y2;
+  float z2;
+  BYTE unk3[712];
+  ActorMovement *actorMovement;
+  BYTE unk4[164];
+};
+
+<SvenEvert> I'd wager that if the 2nd int in the actor struct is -1, it's neither a unit or a player
+<SvenEvert> and if the byte at unk[160] is  -1, it's client-only, so most likely gui
+<SvenEvert> otherwise it's some prop/environment sent by the server
+<SvenEvert> jhurliman: note that this is very quickly analyzed, so I might be totally wrong, but the debugstrings hint that something like this should be true  :P
+<jhurliman> interesting, thanks. i'll double check that against the model names
+<jhurliman> what debugview are you referring to?
+<SvenEvert> there is most likely some value that describes what type it is, but I didn't find that back then
+<SvenEvert> jhurliman: well, in patch 7, there is a byte at 0x13CA2E8(non-rebased)
+<SvenEvert> that represents a few different debug views (0 - 23, it seems)
+<SvenEvert> so setting that will cause a switch to render one of the debug info views
+<SvenEvert> probably not the same in patch 9
+<SvenEvert> but just search for the strings in my pastie, and go one function upwards, and you should have your debugViewRenderer, with the dword address in there something
+<SvenEvert> somewhere*
+<SvenEvert> jhurliman: are you using IDA?
+<jhurliman> yeah
+<jhurliman> 6.1
+<jhurliman> thanks for the info. forums have been a bit slow lately and it's good to see other people are working on this stuff too
+<SvenEvert> jhurliman: well then, as said, string search on one of the string, say "RActors in Main List: %d"
+<SvenEvert> and just go xref upwards
