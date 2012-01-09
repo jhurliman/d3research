@@ -11,6 +11,16 @@ namespace d3sandbox
 
     public static class Utils
     {
+        public static uint HashItemName(string input)
+        {
+            input = input.ToLowerInvariant();
+
+            uint hash = 0;
+            for (int i = 0; i < input.Length; i++)
+                hash = (hash << 5) + hash + input[i];
+            return hash;
+        }
+
         public static string BitsToString(uint bits)
         {
             return Convert.ToString(bits, 2).PadLeft(32, '0');

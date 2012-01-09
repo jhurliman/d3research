@@ -35,11 +35,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameAttribute.List.cs" />
+    <Compile Include="D3Types.cs" />
+    <Compile Include="GameAttribute.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Types.cs" />
+    <Compile Include="MemoryReader.cs" />
+    <Compile Include="Types.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
