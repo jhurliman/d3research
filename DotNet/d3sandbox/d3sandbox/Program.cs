@@ -24,11 +24,19 @@ namespace d3sandbox
                 Player player = reader.GetPlayer();
                 Console.WriteLine("Player: " + player);
 
-                // Fetch all scene entities
+                // Fetch all entities
                 List<Entity> entities = reader.GetEntities();
+                Console.WriteLine();
                 Console.WriteLine("Entities ({0} total):", entities.Count);
                 foreach (Entity entity in entities)
                     Console.WriteLine(entity);
+
+                // Fetch all scenes
+                List<Scene> scenes = reader.GetScenes();
+                Console.WriteLine();
+                Console.WriteLine("Scenes ({0} total):", scenes.Count);
+                foreach (Scene scene in scenes)
+                    Console.WriteLine(scene);
             }
         }
     }

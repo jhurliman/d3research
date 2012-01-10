@@ -35,10 +35,10 @@ but do not trust the data coming from the server emulator as canonical.
 * Basic actor classification (can tell monsters, loot and player apart from 
   everything else)
 * Enumerate attributes for each actor
+* Enumerate scenes
 
 ## TODO ##
 
-* Enumerate scenes
 * Enumerate navcells in scenes and build a navigation map
 ![Navcell enumeration example](http://dl.dropbox.com/u/6736045/navcell-list.jpg)
 ![Navcell display example](http://dl.dropbox.com/u/4381027/bssknuul.jpg)

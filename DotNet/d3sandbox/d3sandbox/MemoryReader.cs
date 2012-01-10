@@ -59,8 +59,10 @@ namespace d3sandbox
 
         private BlackMagic d3;
         private uint pObjMgr;
-        private uint pTLSObjMgr;
         private uint pRActors;
+        private uint pScenes;
+
+        private uint pTLSObjMgr;
         private uint pACDs;
         private uint pAttributes;
 
@@ -88,6 +90,7 @@ namespace d3sandbox
             pTLSObjMgr = GetTLSPointer();
 
             pRActors = GetRActorContainer();
+            pScenes = GetScenesContainer();
             pACDs = GetACDContainer();
             pAttributes = GetAttributeContainer();
         }
@@ -107,6 +110,7 @@ namespace d3sandbox
             if (acdPtr == INVALID)
                 throw new InvalidHostException("Failed to resolve player acdID " + actor.AcdID + " to a pointer");
             ActorCommonData acd = new ActorCommonData(d3.ReadBytes(acdPtr, 720));
+            acd.AttributesPtr = IDToPtr(pAttributes, 384, acd.AttributesID);
 
             Player player = new Player(actor, acd);
             player.Attributes = GetEntityAttributes(player);
@@ -135,6 +139,7 @@ namespace d3sandbox
                     if (acdPtr != INVALID)
                     {
                         ActorCommonData acd = new ActorCommonData(d3.ReadBytes(acdPtr, 720));
+                        acd.AttributesPtr = IDToPtr(pAttributes, 384, acd.AttributesID);
 
                         Entity entity = new Entity(actor, acd);
                         entity.Attributes = GetEntityAttributes(entity);
@@ -147,11 +152,34 @@ namespace d3sandbox
             return entities;
         }
 
+        public List<Scene> GetScenes()
+        {
+            // Grab the size of the Scenes array
+            int sceneArraySize = d3.ReadInt(pScenes + 268);
+
+            // Grab the first scene
+            uint pScene = d3.ReadUInt(pScenes + 328);
+
+            // Loop through the array and grab all valid scene objects
+            List<Scene> scenes = new List<Scene>(sceneArraySize);
+            for (uint i = 0; i < sceneArraySize; i++)
+            {
+                Scene scene = GetScene(pScene + i * 680);
+                if (scene != null)
+                {
+                    // FIXME: Grab NavMesh
+
+                    scenes.Add(scene);
+                }
+            }
+
+            return scenes;
+        }
+
         public GameAttributeValue? GetAttribute(Entity entity, GameAttribute attrib)
         {
             uint ptr;
 
-            uint attributes = IDToPtr(pAttributes, 384, entity._acd.AttributeID);
             uint attribID = 0xFFFFF000 | (uint)attrib.ID;
 
             /*ptr = d3.ReadUInt(d3.ReadUInt(attributes + 56) + 4 * (d3.ReadUInt(attributes + 200) & (attribID ^ (attribID >> 16))));
@@ -168,7 +196,7 @@ namespace d3sandbox
                 throw new NotImplementedException();
             }
         Lookup2:*/
-            uint v0 = d3.ReadUInt(attributes + 16);
+            uint v0 = d3.ReadUInt(entity._acd.AttributesPtr + 16);
             ptr = d3.ReadUInt(d3.ReadUInt(v0 + 8) + 4 * (d3.ReadUInt(v0 + 1048) & (attribID ^ (attribID >> 16))));
             if (ptr != 0)
             {
@@ -244,6 +272,17 @@ namespace d3sandbox
         }
 
         /// <summary>
+        /// Fetches the global pointer to the scenes container
+        /// </summary>
+        private uint GetScenesContainer()
+        {
+            uint pScenes = d3.ReadUInt(pObjMgr + 0x8F0);
+            if (d3.ReadASCIIString(pScenes, 7) == "Scenes")
+                return pScenes;
+            return INVALID;
+        }
+
+        /// <summary>
         /// Fetch 
         /// </summary>
         /// <returns></returns>
@@ -271,7 +310,9 @@ namespace d3sandbox
                                     (uint)Marshal.SizeOf(typeof(THREAD_BASIC_INFORMATION)), IntPtr.Zero) == 0)
                                 {
                                     uint tlsOffset = (uint)tbi.TebBaseAddress.ToInt32();
-                                    tlsPtr = d3.ReadUInt(d3.ReadUInt(d3.ReadUInt(tlsOffset + 0xEA4)));
+                                    uint tlsIndex = d3.ReadUInt(0x013EFD70);
+                                    tlsPtr = d3.ReadUInt(d3.ReadUInt(d3.ReadUInt(tlsOffset + 0xE10 + (tlsIndex * 4))));
+                                    
                                     CloseHandle(threadHandle);
                                     break;
                                 }
@@ -313,6 +354,17 @@ namespace d3sandbox
         {
             if (d3.ReadUInt(ptr) != INVALID)
                 return new RActor(ptr, d3.ReadBytes(ptr, 1068));
+            return null;
+        }
+
+        /// <summary>
+        /// Read a scene object
+        /// </summary>
+        /// <param name="ptr">Pointer to the scene to read</param>
+        private Scene GetScene(uint ptr)
+        {
+            if (d3.ReadUInt(ptr) != INVALID)
+                return new Scene(d3, ptr, d3.ReadBytes(ptr, 680));
             return null;
         }
 

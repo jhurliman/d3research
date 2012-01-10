@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Magic;
 
 namespace d3sandbox
 {
@@ -81,9 +82,12 @@ namespace d3sandbox
         /// <summary>Game balance ID. A hash of the original game balance
         /// string identifier</summary>
         public uint GBID;
-        /// <summary>Attribute ID, used to find the collection of attributes 
+        /// <summary>Attributes ID, used to find the collection of attributes 
         /// attached to this ACD</summary>
-        public uint AttributeID;
+        public uint AttributesID;
+        /// <summary>Attributes pointer, pointing to the collection of 
+        /// attributes attached to this ACD</summary>
+        public uint AttributesPtr;
 
         public ActorCommonData(byte[] data)
         {
@@ -91,7 +95,42 @@ namespace d3sandbox
             this.ModelName = Utils.AsciiBytesToString(data, 4, 128);
             this.GBType = BitConverter.ToInt32(data, 176);
             this.GBID = BitConverter.ToUInt32(data, 180);
-            this.AttributeID = BitConverter.ToUInt32(data, 288);
+            this.AttributesID = BitConverter.ToUInt32(data, 288);
+        }
+    }
+
+    public class Scene
+    {
+        /// <summary>Pointer to the scene in memory</summary>
+        public uint Pointer;
+        /// <summary>Unique lookup ID for this scene</summary>
+        public uint InstanceID;
+        /// <summary>Scene identifier</summary>
+        public uint SceneID;
+        /// <summary>Identifier for the world this scene belongs to</summary>
+        public uint WorldID;
+        /// <summary>Whether this scene is currently active or not</summary>
+        public bool Active;
+        /// <summary>Pointer to the NavMesh for this scene</summary>
+        public uint NavMeshPtr;
+        /// <summary>Name of the scene</summary>
+        public string Name;
+
+        public Scene(BlackMagic d3, uint ptr, byte[] data)
+        {
+            this.Pointer = ptr;
+            this.InstanceID = BitConverter.ToUInt32(data, 0);
+            this.SceneID = BitConverter.ToUInt32(data, 4);
+            this.WorldID = BitConverter.ToUInt32(data, 8);
+            this.NavMeshPtr = BitConverter.ToUInt32(data, 380);
+            this.Active = (d3.ReadUInt(ptr + 396) & 1) != 0;
+            this.Name = d3.ReadASCIIString(BitConverter.ToUInt32(data, 604) + 8, 128);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ({1}) ID: {2:X} Instance: {3:X} World: {4:X}",
+                Name, Active ? "Active" : "Inactive", SceneID, InstanceID, WorldID);
         }
     }
 }
