@@ -116,6 +116,8 @@ namespace d3sandbox
         /// <summary>Name of the scene</summary>
         public string Name;
 
+        //FIXME: Need SnoID. Will be '1904' for scene trOut_Tristram_E09_S14 (0x04000041)
+
         public Scene(BlackMagic d3, uint ptr, byte[] data)
         {
             this.Pointer = ptr;

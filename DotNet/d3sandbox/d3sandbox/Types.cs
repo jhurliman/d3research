@@ -58,25 +58,6 @@ namespace d3sandbox
         }
     }
 
-    public struct Vector3
-    {
-        public float X;
-        public float Y;
-        public float Z;
-
-        public Vector3(byte[] data, int pos)
-        {
-            X = BitConverter.ToSingle(data, pos);
-            Y = BitConverter.ToSingle(data, pos + 4);
-            Z = BitConverter.ToSingle(data, pos + 8);
-        }
-
-        public override string ToString()
-        {
-            return String.Format("<{0:0.000}, {1:0.000}, {2:0.000}>", X, Y, Z);
-        }
-    }
-
     public class Entity
     {
         public string Name;
