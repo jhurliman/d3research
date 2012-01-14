@@ -36,15 +36,20 @@ but do not trust the data coming from the server emulator as canonical.
   everything else)
 * Enumerate attributes for each actor
 * Enumerate scenes
+* Walk to location
+* Attack enemy/object
+* Use different attacks/abilities
 
 ## TODO ##
 
+* Open chests/doors
 * Enumerate navcells in scenes and build a navigation map
 ![Navcell enumeration example](http://dl.dropbox.com/u/6736045/navcell-list.jpg)
 ![Navcell display example](http://dl.dropbox.com/u/4381027/bssknuul.jpg)
-* Walk to location
-* Attack enemy/object, interact with NPC, open chest/door, etc
-* Use different attacks/abilities
+* Determine what attacks/items are mapped to hotkeys
+* Path-finding through worlds
+* Create an API for AI
+* Implement class AI
 * Inventory enumeration
 * Identify special entities: waypoints, stash
 * Sell inventory items to NPCs

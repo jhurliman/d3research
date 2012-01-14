@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using CrystalMpq;
 using Gibbed.IO;
 
 namespace d3sandbox
 {
-    public class Vector3
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vector3
     {
         public float X;
         public float Y;
         public float Z;
-
-        public Vector3()
-        {
-            this.X = 0;
-            this.Y = 0;
-            this.Z = 0;
-        }
 
         public Vector3(Vector3 vector)
         {
@@ -28,7 +23,9 @@ namespace d3sandbox
 
         public Vector3(float x, float y, float z)
         {
-            Set(x, y, z);
+            this.X = x;
+            this.Y = y;
+            this.Z = z;
         }
 
         public Vector3(byte[] data, int pos)
@@ -144,6 +141,26 @@ namespace d3sandbox
             return new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
+        public static Vector3 operator *(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+        }
+
+        public static Vector3 operator *(Vector3 a, float b)
+        {
+            return new Vector3(a.X * b, a.Y * b, a.Z * b);
+        }
+
+        public static Vector3 operator /(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+        }
+
+        public static Vector3 operator /(Vector3 a, float b)
+        {
+            return new Vector3(a.X / b, a.Y / b, a.Z / b);
+        }
+
         public static bool operator <(Vector3 a, Vector3 b)
         {
             return !(a > b);
@@ -169,16 +186,13 @@ namespace d3sandbox
 
         public override bool Equals(object o)
         {
-            if (object.ReferenceEquals(this, o))
-                return true;
-            var v = o as Vector3;
-            if (v != null)
-            {
-                return this.X == v.X
-                    && this.Y == v.Y
-                    && this.Z == v.Z;
-            }
-            return false;
+            if (!(o is Vector3))
+                return false;
+
+            var v = (Vector3)o;
+            return this.X == v.X
+                && this.Y == v.Y
+                && this.Z == v.Z;
         }
 
         public override int GetHashCode()

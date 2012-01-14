@@ -45,9 +45,11 @@
     <Compile Include="GameAttribute.List.cs" />
     <Compile Include="D3Types.cs" />
     <Compile Include="GameAttribute.cs" />
+    <Compile Include="Injector.cs" />
     <Compile Include="MPQ\GameBitBuffer.cs" />
     <Compile Include="MPQ\MpqFileStreamExtensions.cs" />
     <Compile Include="MPQ\MpqReader.cs" />
+    <Compile Include="Offsets.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MemoryReader.cs" />

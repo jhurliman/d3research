@@ -5,14 +5,12 @@ using CrystalMpq;
 
 namespace d3sandbox
 {
-    public class RGBAColor
+    public struct RGBAColor
     {
         public byte Red;
         public byte Green;
         public byte Blue;
         public byte Alpha;
-
-        public RGBAColor() { }
 
         /// <summary>
         /// Reads RGBAColor from given MPQFileStream.

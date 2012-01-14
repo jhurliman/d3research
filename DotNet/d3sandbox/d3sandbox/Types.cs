@@ -63,6 +63,7 @@ namespace d3sandbox
         public string Name;
         public string ModelName;
         public EntityType Type;
+        public int SnoID;
         public Vector3 Position;
         public Vector2 Direction;
         public Dictionary<GameAttribute, GameAttributeValue> Attributes;
@@ -78,14 +79,15 @@ namespace d3sandbox
             Name = "";
             ModelName = _rActor.ModelName;
             Type = (EntityType)_acd.GBType;
-            Position = _rActor.Pos1;
+            SnoID = _rActor.SnoID;
+            Position = (_rActor.Pos1 + _rActor.Pos2) * 0.5f;
             Direction = _rActor.Direction;
         }
 
         public override string ToString()
         {
-            string str = String.Format("[{0}] {1} ({2}) @ {3} {4} ({5} attributes)", Type, Name, ModelName, Position, Direction,
-                Attributes != null ? Attributes.Count : 0);
+            string str = String.Format("[{0}] {1} ({2}, {3:X}) @ {4} {5} ({6} attributes)", Type, Name, ModelName, SnoID,
+                Position, Direction, Attributes != null ? Attributes.Count : 0);
             if (Attributes.Count != 0)
             {
                 foreach (KeyValuePair<GameAttribute, GameAttributeValue> kvp in Attributes)

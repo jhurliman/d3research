@@ -55,7 +55,7 @@ namespace d3sandbox
 
         #endregion Win32 API Imports
 
-        public const uint INVALID = 0xFFFFFFFF;
+        public uint EndSceneAddr;
 
         private BlackMagic d3;
         private uint pObjMgr;
@@ -65,6 +65,7 @@ namespace d3sandbox
         private uint pTLSObjMgr;
         private uint pACDs;
         private uint pAttributes;
+        private uint pD3DDevice;
 
         private static Dictionary<uint, HeroClass> gbidHeroClasses;
 
@@ -84,7 +85,7 @@ namespace d3sandbox
             this.d3 = d3;
 
             // Fetch the global pointer to the object manager
-            pObjMgr = d3.ReadUInt(0x140593C);
+            pObjMgr = d3.ReadUInt(Offsets.OBJMANAGER);
 
             // Fetch the pointer to the thread-local object manager
             pTLSObjMgr = GetTLSPointer();
@@ -93,6 +94,8 @@ namespace d3sandbox
             pScenes = GetScenesContainer();
             pACDs = GetACDContainer();
             pAttributes = GetAttributeContainer();
+            pD3DDevice = GetDirect3DDevice();
+            EndSceneAddr = d3.ReadUInt(d3.ReadUInt(pD3DDevice) + Offsets.D3D_DEVICE_ENDSCENE_OFFSET);
         }
 
         /// <summary>
@@ -101,15 +104,18 @@ namespace d3sandbox
         public Player GetPlayer()
         {
             uint id = GetPlayerRActorID();
-            uint actorPtr = IDToPtr(pRActors, 1068, id);
-            if (actorPtr == INVALID)
-                throw new InvalidHostException("Failed to resolve player actorID " + id + " to a pointer");
-            RActor actor = new RActor(actorPtr, d3.ReadBytes(actorPtr, 1068));
+            if (id == Offsets.INVALID)
+                return null;
 
-            uint acdPtr = IDToPtr(pACDs, 720, actor.AcdID);
-            if (acdPtr == INVALID)
+            uint actorPtr = IDToPtr(pRActors, Offsets.SIZEOF_RACTOR, id);
+            if (actorPtr == Offsets.INVALID)
+                throw new InvalidHostException("Failed to resolve player actorID " + id + " to a pointer");
+            RActor actor = new RActor(d3, actorPtr, d3.ReadBytes(actorPtr, Offsets.SIZEOF_RACTOR));
+
+            uint acdPtr = IDToPtr(pACDs, Offsets.SIZEOF_ACD, actor.AcdID);
+            if (acdPtr == Offsets.INVALID)
                 throw new InvalidHostException("Failed to resolve player acdID " + actor.AcdID + " to a pointer");
-            ActorCommonData acd = new ActorCommonData(d3.ReadBytes(acdPtr, 720));
+            ActorCommonData acd = new ActorCommonData(acdPtr, d3.ReadBytes(acdPtr, Offsets.SIZEOF_ACD));
             acd.AttributesPtr = IDToPtr(pAttributes, 384, acd.AttributesID);
 
             Player player = new Player(actor, acd);
@@ -132,14 +138,14 @@ namespace d3sandbox
             List<Entity> entities = new List<Entity>(actorArraySize);
             for (uint i = 0; i < actorArraySize; i++)
             {
-                RActor actor = GetRActor(pRActor + i * 1068);
+                RActor actor = GetRActor(pRActor + i * Offsets.SIZEOF_RACTOR);
                 if (actor != null)
                 {
-                    uint acdPtr = IDToPtr(pACDs, 720, actor.AcdID);
-                    if (acdPtr != INVALID)
+                    uint acdPtr = IDToPtr(pACDs, Offsets.SIZEOF_ACD, actor.AcdID);
+                    if (acdPtr != Offsets.INVALID)
                     {
-                        ActorCommonData acd = new ActorCommonData(d3.ReadBytes(acdPtr, 720));
-                        acd.AttributesPtr = IDToPtr(pAttributes, 384, acd.AttributesID);
+                        ActorCommonData acd = new ActorCommonData(acdPtr, d3.ReadBytes(acdPtr, Offsets.SIZEOF_ACD));
+                        acd.AttributesPtr = IDToPtr(pAttributes, Offsets.SIZEOF_ATTRIBUTE, acd.AttributesID);
 
                         Entity entity = new Entity(actor, acd);
                         entity.Attributes = GetEntityAttributes(entity);
@@ -155,22 +161,18 @@ namespace d3sandbox
         public List<Scene> GetScenes()
         {
             // Grab the size of the Scenes array
-            int sceneArraySize = d3.ReadInt(pScenes + 268);
+            int sceneArraySize = d3.ReadInt(pScenes + Offsets.ARRAY_SIZE_OFFSET);
 
             // Grab the first scene
-            uint pScene = d3.ReadUInt(pScenes + 328);
+            uint pScene = d3.ReadUInt(pScenes + Offsets.ARRAY_OFFSET);
 
             // Loop through the array and grab all valid scene objects
             List<Scene> scenes = new List<Scene>(sceneArraySize);
             for (uint i = 0; i < sceneArraySize; i++)
             {
-                Scene scene = GetScene(pScene + i * 680);
+                Scene scene = GetScene(pScene + i * Offsets.SIZEOF_SCENE);
                 if (scene != null)
-                {
-                    // FIXME: Grab NavMesh
-
                     scenes.Add(scene);
-                }
             }
 
             return scenes;
@@ -246,16 +248,16 @@ namespace d3sandbox
         private uint GetPlayerRActorID()
         {
             uint v0 = d3.ReadUInt(d3.ReadUInt(pObjMgr + 2352));
-            if (v0 == INVALID)
-                return INVALID;
+            if (v0 == Offsets.INVALID)
+                return Offsets.INVALID;
 
             uint v1 = d3.ReadUInt(pObjMgr + 1916 + 168);
             if (v1 == 0)
-                return INVALID;
+                return Offsets.INVALID;
 
             uint v2 = 30520 * v0 + v1 + 88;
             if (v2 == 0)
-                return INVALID;
+                return Offsets.INVALID;
 
             return d3.ReadUInt(v2 + 8);
         }
@@ -268,7 +270,7 @@ namespace d3sandbox
             uint pActors = d3.ReadUInt(pObjMgr + 0x8AC);
             if (d3.ReadASCIIString(pActors, 7) == "RActors")
                 return pActors;
-            return INVALID;
+            return Offsets.INVALID;
         }
 
         /// <summary>
@@ -279,7 +281,7 @@ namespace d3sandbox
             uint pScenes = d3.ReadUInt(pObjMgr + 0x8F0);
             if (d3.ReadASCIIString(pScenes, 7) == "Scenes")
                 return pScenes;
-            return INVALID;
+            return Offsets.INVALID;
         }
 
         /// <summary>
@@ -288,7 +290,7 @@ namespace d3sandbox
         /// <returns></returns>
         private uint GetTLSPointer()
         {
-            uint tlsPtr = INVALID;
+            uint tlsPtr = Offsets.INVALID;
 
             IntPtr snapHandle = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, 0);
             if (snapHandle != null)
@@ -309,9 +311,9 @@ namespace d3sandbox
                                 if (NtQueryInformationThread(threadHandle, 0, ref tbi,
                                     (uint)Marshal.SizeOf(typeof(THREAD_BASIC_INFORMATION)), IntPtr.Zero) == 0)
                                 {
-                                    uint tlsOffset = (uint)tbi.TebBaseAddress.ToInt32();
-                                    uint tlsIndex = d3.ReadUInt(0x013EFD70);
-                                    tlsPtr = d3.ReadUInt(d3.ReadUInt(d3.ReadUInt(tlsOffset + 0xE10 + (tlsIndex * 4))));
+                                    uint tlsOffset = (uint)tbi.TebBaseAddress.ToInt32() + Offsets.TLS_OFFSET;
+                                    uint tlsIndex = d3.ReadUInt(Offsets.TLS_INDEX);
+                                    tlsPtr = d3.ReadUInt(d3.ReadUInt(d3.ReadUInt(tlsOffset + (tlsIndex * 4))));
                                     
                                     CloseHandle(threadHandle);
                                     break;
@@ -346,14 +348,19 @@ namespace d3sandbox
             return d3.ReadUInt(d3.ReadUInt(pTLSObjMgr + 0xC8) + 0x70);
         }
 
+        private uint GetDirect3DDevice()
+        {
+            return d3.ReadUInt(d3.ReadUInt(Offsets.D3DMANAGER_PTR) + Offsets.D3DMANAGER_DEVICE_OFFSET);
+        }
+
         /// <summary>
         /// Read an RActor object
         /// </summary>
         /// <param name="ptr">Pointer to the RActor to read</param>
         private RActor GetRActor(uint ptr)
         {
-            if (d3.ReadUInt(ptr) != INVALID)
-                return new RActor(ptr, d3.ReadBytes(ptr, 1068));
+            if (d3.ReadUInt(ptr) != Offsets.INVALID)
+                return new RActor(d3, ptr, d3.ReadBytes(ptr, 1068));
             return null;
         }
 
@@ -363,8 +370,8 @@ namespace d3sandbox
         /// <param name="ptr">Pointer to the scene to read</param>
         private Scene GetScene(uint ptr)
         {
-            if (d3.ReadUInt(ptr) != INVALID)
-                return new Scene(d3, ptr, d3.ReadBytes(ptr, 680));
+            if (d3.ReadUInt(ptr) != Offsets.INVALID)
+                return new Scene(d3, ptr, d3.ReadBytes(ptr, Offsets.SIZEOF_SCENE));
             return null;
         }
 
@@ -380,7 +387,7 @@ namespace d3sandbox
             uint shortID = id & 0xFFFF;
 
             if (shortID >= d3.ReadUInt(container + 256))
-                return INVALID;
+                return Offsets.INVALID;
 
             uint v0 = d3.ReadUInt(container + 328);
             int v1 = d3.ReadInt(container + 396);
@@ -389,7 +396,7 @@ namespace d3sandbox
             if (d3.ReadUInt(ptr) == id)
                 return ptr;
 
-            return INVALID;
+            return Offsets.INVALID;
         }
 
         /// <summary>

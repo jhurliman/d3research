@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 using CrystalMpq;
 using Gibbed.IO;
 
 namespace d3sandbox
 {
-    public class Vector2I
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vector2I
     {
         public int X;
         public int Y;
-
-        public Vector2I() { }
 
         /// <summary>
         /// Reads Vector2D from given MPQFileStream.

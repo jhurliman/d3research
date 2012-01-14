@@ -42,7 +42,44 @@ namespace d3sandbox
                 Console.WriteLine("Scenes ({0} total):", scenes.Count);
                 foreach (Scene scene in scenes)
                     Console.WriteLine(scene);
+
+                // Inject our custom code
+                Injector injector = new Injector(d3, memReader.EndSceneAddr);
+
+                // Punch the nearest monster
+                Entity nearestMonster = GetNearestMonster(player, entities);
+                if (nearestMonster != null)
+                {
+                    Console.WriteLine("Walking to monster {0:X}", nearestMonster._rActor.ActorID);
+                    injector.UsePower(player, new PowerInfo(0x777C, nearestMonster.Position, nearestMonster._rActor.WorldID));
+
+                    System.Threading.Thread.Sleep(2000);
+
+                    Console.WriteLine("Punching monster {0:X}", nearestMonster._rActor.ActorID);
+                    injector.UsePower(player, new PowerInfo(0x76B7, nearestMonster._acd.ACDID));
+                }
             }
+        }
+
+        private static Entity GetNearestMonster(Player player, List<Entity> entities)
+        {
+            Entity nearestMonster = null;
+
+            float nearestDist = Single.MaxValue;
+            foreach (Entity entity in entities)
+            {
+                if (entity.Type == EntityType.Monster)
+                {
+                    float dist = player.Position.DistanceSquared(ref entity.Position);
+                    if (dist < nearestDist)
+                    {
+                        nearestDist = dist;
+                        nearestMonster = entity;
+                    }
+                }
+            }
+
+            return nearestMonster;
         }
     }
 }

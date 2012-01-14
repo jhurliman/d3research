@@ -11,11 +11,11 @@ namespace d3sandbox
 {
     public class MpqReader
     {
-        public List<SceneAsset> Scenes;
+        public Dictionary<int, SceneAsset> Scenes;
 
         public MpqReader(string d3Path)
         {
-            this.Scenes = new List<SceneAsset>();
+            this.Scenes = new Dictionary<int, SceneAsset>();
 
             List<string> mpqFiles = GetFilesByExtensionRecursive(Path.Combine(d3Path, "Data_D3\\PC\\MPQs"), ".mpq");
             SortedList<int, string> mpqFileList = new SortedList<int, string>();
@@ -56,16 +56,20 @@ namespace d3sandbox
                 while (stream.Position < stream.Length)
                 {
                     var group = (SNOGroup)stream.ReadValueS32();
-                    if (group != SNOGroup.Scene)
-                        continue;
-
                     var snoID = stream.ReadValueS32();
                     var name = stream.ReadString(128, true);
-                    var filename = group + "\\" + name + ".scn";
 
-                    MpqFile sceneFile = fs.FindFile(filename);
-                    SceneAsset scene = new SceneAsset(sceneFile);
-                    this.Scenes.Add(scene);
+                    if (group == SNOGroup.Scene)
+                    {
+                        var filename = group + "\\" + name + ".scn";
+                        MpqFile sceneFile = fs.FindFile(filename);
+                        SceneAsset scene = new SceneAsset(sceneFile);
+                        this.Scenes[snoID] = scene;
+                    }
+                    else if (group == SNOGroup.Power)
+                    {
+                        //Console.WriteLine("Power: {0} ({1:X})", name, snoID);
+                    }
                 }
             }
         }
