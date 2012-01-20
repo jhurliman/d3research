@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{D5F43257-430E-4615-BE9C-83B5D5569E92}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>d3codegen</RootNamespace>
+    <AssemblyName>d3codegen</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Gibbed.IO">
+      <HintPath>..\lib\Gibbed.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MPQ\ActorKeys.cs" />
+    <Compile Include="MPQ\AnimationSetKeys.cs" />
+    <Compile Include="MPQ\Asset.cs" />
+    <Compile Include="MPQ\Data.cs" />
+    <Compile Include="MPQ\FileExtensions.cs" />
+    <Compile Include="MPQ\FileFormat.cs" />
+    <Compile Include="MPQ\FileFormatAttribute.cs" />
+    <Compile Include="MPQ\FileFormats\Act.cs" />
+    <Compile Include="MPQ\FileFormats\Actor.cs" />
+    <Compile Include="MPQ\FileFormats\Adventure.cs" />
+    <Compile Include="MPQ\FileFormats\Anim.cs" />
+    <Compile Include="MPQ\FileFormats\AnimSet.cs" />
+    <Compile Include="MPQ\FileFormats\BossEncounter.cs" />
+    <Compile Include="MPQ\FileFormats\Condition.cs" />
+    <Compile Include="MPQ\FileFormats\Conversation.cs" />
+    <Compile Include="MPQ\FileFormats\ConversationList.cs" />
+    <Compile Include="MPQ\FileFormats\EffectGroup.cs" />
+    <Compile Include="MPQ\FileFormats\Encounter.cs" />
+    <Compile Include="MPQ\FileFormats\GameBalance.cs" />
+    <Compile Include="MPQ\FileFormats\Globals.cs" />
+    <Compile Include="MPQ\FileFormats\LevelArea.cs" />
+    <Compile Include="MPQ\FileFormats\Lore.cs" />
+    <Compile Include="MPQ\FileFormats\MarkerSet.cs" />
+    <Compile Include="MPQ\FileFormats\Monster.cs" />
+    <Compile Include="MPQ\FileFormats\Observer.cs" />
+    <Compile Include="MPQ\FileFormats\PhysMesh.cs" />
+    <Compile Include="MPQ\FileFormats\Power.cs" />
+    <Compile Include="MPQ\FileFormats\Quest.cs" />
+    <Compile Include="MPQ\FileFormats\QuestRange.cs" />
+    <Compile Include="MPQ\FileFormats\Recipe.cs" />
+    <Compile Include="MPQ\FileFormats\Scene.cs" />
+    <Compile Include="MPQ\FileFormats\SceneGroup.cs" />
+    <Compile Include="MPQ\FileFormats\SkillKit.cs" />
+    <Compile Include="MPQ\FileFormats\TreasureClass.cs" />
+    <Compile Include="MPQ\FileFormats\Tutorial.cs" />
+    <Compile Include="MPQ\FileFormats\Types\Common.cs" />
+    <Compile Include="MPQ\FileFormats\World.cs" />
+    <Compile Include="MPQ\FileHelpers.cs" />
+    <Compile Include="MPQ\GameBitBuffer.cs" />
+    <Compile Include="MPQ\MarkerKeys.cs" />
+    <Compile Include="MPQ\MPQAsset.cs" />
+    <Compile Include="MPQ\MPQPatchChain.cs" />
+    <Compile Include="MPQ\MPQStorage.cs" />
+    <Compile Include="MPQ\PersistentProperty.cs" />
+    <Compile Include="MPQ\PowerKeys.cs" />
+    <Compile Include="MPQ\SceneCachedValues.cs" />
+    <Compile Include="MPQ\SceneSpecification.cs" />
+    <Compile Include="MPQ\SerializableData.cs" />
+    <Compile Include="MPQ\SNOGroup.cs" />
+    <Compile Include="MPQ\SNOHandle.cs" />
+    <Compile Include="MPQ\StringHashHelper.cs" />
+    <Compile Include="MPQ\TagMap.cs" />
+    <Compile Include="MPQ\TinyLogger.cs" />
+    <Compile Include="MPQ\Types.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\CrystalMpq\CrystalMpq.csproj">
+      <Project>{B5A4A3C8-5F65-4112-B147-31E2AA1A1E9F}</Project>
+      <Name>CrystalMpq</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

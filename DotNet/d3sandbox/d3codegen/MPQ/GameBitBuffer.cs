@@ -1,9 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/*
+ * Copyright (C) 2011 mooege project
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+using System;
 using System.Text;
 
-namespace d3sandbox
+namespace Mooege.Net.GS.Message
 {
+    public class GameBitBufferException : Exception
+    {
+        public GameBitBufferException(string msg) : base(msg) { }
+    }
+
     public class GameBitBuffer
     {
         public byte[] Data;
@@ -113,7 +135,7 @@ namespace d3sandbox
         public int ReadInt(int length)
         {
             if (!CheckAvailable(length))
-                throw new IndexOutOfRangeException("Not enough bits remaining.");
+                throw new GameBitBufferException("Not enough bits remaining.");
 
             int result = 0;
             while (length > 0)
@@ -216,7 +238,7 @@ namespace d3sandbox
             int size = ReadInt(GetBitCount(maxLength));
             Position = (Position + 7) & (~7);
             if (!CheckAvailable(size * 8))
-                throw new IndexOutOfRangeException("Not enough bits remaining.");
+                throw new GameBitBufferException("Not enough bits remaining.");
             var result = Encoding.UTF8.GetString(Data, Position >> 3, size);
             Position += size * 8;
             return result;
@@ -243,7 +265,7 @@ namespace d3sandbox
             byte[] result = new byte[size];
             Position = (Position + 7) & (~7);
             if (!CheckAvailable(size * 8))
-                throw new IndexOutOfRangeException("Not enough bits remaining.");
+                throw new GameBitBufferException("Not enough bits remaining.");
             Buffer.BlockCopy(Data, Position >> 3, result, 0, size);
             Position += size * 8;
             return result;

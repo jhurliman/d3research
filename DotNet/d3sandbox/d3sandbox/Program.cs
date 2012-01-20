@@ -17,17 +17,22 @@ namespace d3sandbox
                 string exePath = d3.GetModuleFilePath();
                 Console.WriteLine(exePath);
 
-                //MpqReader mpqReader = new MpqReader(Path.GetDirectoryName(exePath));
-                //Console.WriteLine("Loaded " + mpqReader.Scenes.Count + " scenes from MPQ archives");
-
                 // Enable a debug flag in the client. Valid values seem to be 0-23, although 8 crashes v8101
                 d3.WriteInt(0x1405978, 20);
 
                 MemoryReader memReader = new MemoryReader(d3);
 
+                //string acct = memReader.GetTextboxValue("Root.NormalLayer.BattleNetLogin_main.LayoutRoot.LoginContainer.AccountInput");
+                //string passwd = memReader.GetTextboxValue("Root.NormalLayer.BattleNetLogin_main.LayoutRoot.LoginContainer.PasswordInput");
+
                 // Fetch the current player
                 Player player = memReader.GetPlayer();
                 Console.WriteLine("Player: " + player);
+
+                uint[] skills = memReader.GetActiveSkills();
+                Console.WriteLine("Active Skills:");
+                for (int i = 0; i < skills.Length; i++)
+                    Console.WriteLine(" {0:X}", skills[i]);
 
                 // Fetch all entities
                 List<Entity> entities = memReader.GetEntities();

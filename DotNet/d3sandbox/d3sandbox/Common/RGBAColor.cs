@@ -26,30 +26,6 @@ namespace d3sandbox
             Alpha = buf[3];
         }
 
-        /// <summary>
-        /// Parses RGBAColor from given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to parse from.</param>
-        public void Parse(GameBitBuffer buffer)
-        {
-            Red = (byte)buffer.ReadInt(8);
-            Green = (byte)buffer.ReadInt(8);
-            Blue = (byte)buffer.ReadInt(8);
-            Alpha = (byte)buffer.ReadInt(8);
-        }
-
-        /// <summary>
-        /// Encodes RGBAColor to given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to write.</param>
-        public void Encode(GameBitBuffer buffer)
-        {
-            buffer.WriteInt(8, Red);
-            buffer.WriteInt(8, Green);
-            buffer.WriteInt(8, Blue);
-            buffer.WriteInt(8, Alpha);
-        }
-
         public void AsText(StringBuilder b, int pad)
         {
             b.Append(' ', pad);

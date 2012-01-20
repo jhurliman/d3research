@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4001B1DA-6DC3-45C3-810A-A66EF7BA79A6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>libdiablo3</RootNamespace>
+    <AssemblyName>libdiablo3</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Api\Actor.cs" />
+    <Compile Include="Api\ActorCategory.cs" />
+    <Compile Include="Api\ActorName.cs" />
+    <Compile Include="Api\ActorTemplates.cs" />
+    <Compile Include="Api\Buff.cs" />
+    <Compile Include="Api\Diablo3Api.cs" />
+    <Compile Include="Api\Item.cs" />
+    <Compile Include="Api\NPC.cs" />
+    <Compile Include="Api\Player.cs" />
+    <Compile Include="Api\PowerFlags.cs" />
+    <Compile Include="Api\EffectFlags.cs" />
+    <Compile Include="Api\Gizmo.cs" />
+    <Compile Include="Api\GizmoGroup.cs" />
+    <Compile Include="Api\Hero.cs" />
+    <Compile Include="Api\Monster.cs" />
+    <Compile Include="Api\PowerName.cs" />
+    <Compile Include="Api\Scene.cs" />
+    <Compile Include="Api\TeamType.cs" />
+    <Compile Include="Api\World.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="Process\D3Actor.cs" />
+    <Compile Include="Process\D3ActorCommonData.cs" />
+    <Compile Include="Process\D3MovementInfo.cs" />
+    <Compile Include="Process\D3PowerInfo.cs" />
+    <Compile Include="Process\D3Scene.cs" />
+    <Compile Include="Process\D3Attribute.cs" />
+    <Compile Include="Process\D3Attribute.List.cs" />
+    <Compile Include="Process\Injector.cs" />
+    <Compile Include="Process\MemoryReader.cs" />
+    <Compile Include="Process\MemoryReadException.cs" />
+    <Compile Include="Process\Offsets.cs" />
+    <Compile Include="Process\ProcessUtils.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Api\Skill.cs" />
+    <Compile Include="Api\SkillSlots.cs" />
+    <Compile Include="Types\AABB.cs" />
+    <Compile Include="Types\MathHelper.cs" />
+    <Compile Include="Types\Matrix4f.cs" />
+    <Compile Include="Types\Quaternion.cs" />
+    <Compile Include="Types\Vector2f.cs" />
+    <Compile Include="Types\Vector3f.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\lib\BlackMagic\BlackMagic.csproj">
+      <Project>{79FD54B0-DEAB-459F-83B9-F1CED68D288B}</Project>
+      <Name>BlackMagic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\fasmdll_managed\fasmdll_managed.vcxproj">
+      <Project>{61D8CF34-1FD7-4A01-BEC1-1A8E8050A9C6}</Project>
+      <Name>fasmdll_managed</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

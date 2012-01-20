@@ -14,6 +14,7 @@ namespace d3sandbox
         private uint oEndScene;
         private byte[] origEndSceneBytes = new byte[] { 0x8B, 0xFF, 0x55, 0x8B, 0xEC };
         private Dictionary<string, Tuple<uint, int>> allocatedMemory = new Dictionary<string, Tuple<uint, int>>();
+        private Random rng = new Random();
 
         public Injector(BlackMagic d3, uint oEndScene)
         {
@@ -27,7 +28,7 @@ namespace d3sandbox
         {
             RemoveHook();
             foreach (KeyValuePair<string, Tuple<uint, int>> kvp in allocatedMemory)
-                d3.FreeMemory(kvp.Value.Item1, kvp.Value.Item2, MemoryFreeType.MEM_DECOMMIT);
+                d3.FreeMemory(kvp.Value.Item1);
         }
 
         public void UsePower(Player player, PowerInfo power)
@@ -81,7 +82,7 @@ namespace d3sandbox
                 //"wszCaption du 'Hello',0"
             };
 
-            foreach (string line in endSceneHookASM)
+            foreach (string line in RandomizeAsm(endSceneHookASM))
                 fasm.AddLine(line);
 
             byte[] compiled = fasm.Assemble();
@@ -136,7 +137,7 @@ namespace d3sandbox
             ManagedFasm fasm = new ManagedFasm(d3.ProcessHandle);
             fasm.SetMemorySize(0x4096);
 
-            foreach (string line in asm)
+            foreach (string line in RandomizeAsm(asm))
                 fasm.AddLine(line);
 
             byte[] compiled = fasm.Assemble();
@@ -169,5 +170,73 @@ namespace d3sandbox
         {
             return d3.ReadByte(oEndScene) == 0xE9;
         }
+
+        #region Obfuscation
+
+        private string[] NOOP_CODE = new string[]
+        {
+            "mov eax, eax",
+            "mov ecx, ecx",
+            "mov ebp, ebp",
+            "mov edx, edx",
+            "mov ebx, ebx",
+            "mov esp, esp",
+            "mov esi, esi",
+            "mov edi, edi",
+            "nop",
+            "push ebp|pop ebp",
+            "push eax|pop eax",
+            "push ecx|pop ecx",
+            "push edx|pop edx",
+            "push ebx|pop ebx",
+            "push esp|pop esp",
+            "push edi|pop edi",
+            "xchg eax, eax",
+            "xchg ebp, ebp",
+            "xchg ecx, ecx",
+            "xchg edx, edx",
+            "xchg ebx, ebx",
+            "xchg esp, esp",
+            "xchg edi, edi",
+            "xchg eax, ebp|xchg ebp, eax",
+            "xchg ecx, ebp|xchg ebp, ecx",
+            "xchg eax, edx|xchg edx, eax",
+            "xchg eax, ebx|xchg ebx, eax",
+            "xchg eax, edi|xchg edi, eax",
+            "xchg edi, edx|xchg edx, edi",
+            "xchg ecx, ebx|xchg ebx, ecx",
+            "xchg ebp, edi|xchg edi, ebp",
+        };
+
+        private string[] RandomizeAsm(IEnumerable<string> asm)
+        {
+            List<string> output = new List<string>();
+
+            foreach (string line in asm)
+            {
+                for (int i = 0; i < rng.Next(3, 6); i++)
+                {
+                    string noopLine = NOOP_CODE[rng.Next(0, NOOP_CODE.Length)];
+                    if (noopLine.Contains("|"))
+                    {
+                        foreach (string noopLineSection in noopLine.Split('|'))
+                        {
+                            if (noopLineSection.Length > 0)
+                                output.Add(noopLineSection);
+                        }
+                    }
+                    else
+                    {
+                        output.Add(noopLine);
+                    }
+                }
+
+                output.Add(line);
+            }
+
+            return output.ToArray();
+        }
+
+        #endregion Obfuscation
     }
 }

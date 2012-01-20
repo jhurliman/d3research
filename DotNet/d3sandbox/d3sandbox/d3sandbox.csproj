@@ -46,17 +46,11 @@
     <Compile Include="D3Types.cs" />
     <Compile Include="GameAttribute.cs" />
     <Compile Include="Injector.cs" />
-    <Compile Include="MPQ\GameBitBuffer.cs" />
-    <Compile Include="MPQ\MpqFileStreamExtensions.cs" />
-    <Compile Include="MPQ\MpqReader.cs" />
     <Compile Include="Offsets.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MemoryReader.cs" />
     <Compile Include="Common\RGBAColor.cs" />
-    <Compile Include="MPQ\SceneAsset.cs" />
-    <Compile Include="MPQ\SNOGroup.cs" />
-    <Compile Include="MPQ\TriggerEvent.cs" />
     <Compile Include="Types.cs">
       <SubType>Code</SubType>
     </Compile>

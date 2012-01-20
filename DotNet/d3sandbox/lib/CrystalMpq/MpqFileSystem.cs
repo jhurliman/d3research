@@ -171,9 +171,12 @@ namespace CrystalMpq
 			{
 				var file = archive.FindFile(filename);
 
-				if (file != null)
-					if (!file.IsDeleted) return file;
-					else if (!shouldRetrieveDeletedFiles) return null;
+                if (file != null)
+                {
+                    if (!file.IsDeleted) return file;
+                    else if (shouldRetrieveDeletedFiles) return file;
+                    else return null;
+                }
 			}
 			return null;
 		}

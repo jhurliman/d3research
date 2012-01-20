@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace d3sandbox
+namespace Mooege.Core.GS.Common.Types.SNO
 {
     public enum SNOGroup : int
     {

@@ -29,26 +29,6 @@ namespace d3sandbox
             this.Y = y;
         }
 
-        /// <summary>
-        /// Parses Vector2D from given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to parse from.</param>
-        public void Parse(GameBitBuffer buffer)
-        {
-            X = buffer.ReadInt(32);
-            Y = buffer.ReadInt(32);
-        }
-
-        /// <summary>
-        /// Encodes Vector2D to given GameBitBuffer.
-        /// </summary>        
-        /// <param name="buffer">The GameBitBuffer to write.</param>
-        public void Encode(GameBitBuffer buffer)
-        {
-            buffer.WriteInt(32, X);
-            buffer.WriteInt(32, Y);
-        }
-
         public void AsText(StringBuilder b, int pad)
         {
             b.Append(' ', pad);

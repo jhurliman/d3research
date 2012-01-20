@@ -24,28 +24,6 @@ namespace d3sandbox
             this.Max = new Vector3(stream.ReadValueF32(), stream.ReadValueF32(), stream.ReadValueF32());
         }
 
-        /// <summary>
-        /// Parses AABB from given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to parse from.</param>
-        public void Parse(GameBitBuffer buffer)
-        {
-            Min = new Vector3();
-            Min.Parse(buffer);
-            Max = new Vector3();
-            Max.Parse(buffer);
-        }
-
-        /// <summary>
-        /// Encodes AABB to given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to write.</param>
-        public void Encode(GameBitBuffer buffer)
-        {
-            Min.Encode(buffer);
-            Max.Encode(buffer);
-        }
-
         public bool IsWithin(Vector3 v)
         {
             if (v >= this.Min &&

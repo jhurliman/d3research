@@ -51,28 +51,6 @@ namespace d3sandbox
             Z = stream.ReadValueF32();
         }
 
-        /// <summary>
-        /// Parses Vector3D from given GameBitBuffer.
-        /// </summary>
-        /// <param name="buffer">The GameBitBuffer to parse from.</param>
-        public void Parse(GameBitBuffer buffer)
-        {
-            X = buffer.ReadFloat32();
-            Y = buffer.ReadFloat32();
-            Z = buffer.ReadFloat32();
-        }
-
-        /// <summary>
-        /// Encodes Vector3D to given GameBitBuffer.
-        /// </summary>        
-        /// <param name="buffer">The GameBitBuffer to write.</param>
-        public void Encode(GameBitBuffer buffer)
-        {
-            buffer.WriteFloat32(X);
-            buffer.WriteFloat32(Y);
-            buffer.WriteFloat32(Z);
-        }
-
         public void AsText(StringBuilder b, int pad)
         {
             b.Append(' ', pad);

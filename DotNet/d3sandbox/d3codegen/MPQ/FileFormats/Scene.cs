@@ -1,33 +1,33 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2011 mooege project
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+using System;
 using System.Collections.Generic;
 using CrystalMpq;
 using Gibbed.IO;
+using Mooege.Common.MPQ.FileFormats.Types;
+using Mooege.Core.GS.Common.Types.Math;
+using Mooege.Core.GS.Common.Types.SNO;
 
-namespace d3sandbox
+namespace Mooege.Common.MPQ.FileFormats
 {
-    public class Header
-    {
-        public int DeadBeef { get; private set; }
-        public int SnoType { get; private set; }
-        public int Unknown1 { get; private set; }
-        public int Unknown2 { get; private set; }
-        public int Unknown3 { get; private set; }
-        public int Unknown4 { get; private set; }
-        public int SNOId { get; private set; }
-
-        public Header(MpqFileStream stream)
-        {
-            this.DeadBeef = stream.ReadValueS32();
-            this.SnoType = stream.ReadValueS32();
-            this.Unknown1 = stream.ReadValueS32();
-            this.Unknown2 = stream.ReadValueS32();
-            this.SNOId = stream.ReadValueS32();
-            this.Unknown3 = stream.ReadValueS32();
-            this.Unknown4 = stream.ReadValueS32();
-        }
-    }
-
-    public class SceneAsset
+    [FileFormat(SNOGroup.Scene)]
+    public class Scene : FileFormat
     {
         public Header Header { get; private set; }
         public int Int0 { get; private set; }
@@ -45,7 +45,7 @@ namespace d3sandbox
         public int SNOAppearance { get; private set; }
         public int SNOPhysMesh { get; private set; }
 
-        public SceneAsset(MpqFile file)
+        public Scene(MpqFile file)
         {
             var stream = file.Open();
             this.Header = new Header(stream);
@@ -75,7 +75,7 @@ namespace d3sandbox
             this.SNOPhysMesh = stream.ReadValueS32();
             stream.Close();
         }
-
+        
         public class NavMeshDef
         {
             public int SquaresCountX { get; private set; }
@@ -95,7 +95,7 @@ namespace d3sandbox
                 this.NavMeshSquareCount = stream.ReadValueS32();
                 this.Float0 = stream.ReadValueF32();
                 this.Squares = stream.ReadSerializedData<NavMeshSquare>();
-
+               
                 if (SquaresCountX < 64 && SquaresCountY < 64)
                 {
                     WalkGrid = new byte[64, 64];
@@ -113,8 +113,8 @@ namespace d3sandbox
                 // Loop thru each NavmeshSquare in the array, and fills the grid
                 for (int i = 0; i < NavMeshSquareCount; i++)
                 {
-                    WalkGrid[i % SquaresCountY, i / SquaresCountY] = (byte)(Squares[i].Flags & SceneAsset.NavCellFlags.AllowWalk);
-                    // Set the grid to 0x1 if its walkable, left as 0 if not. - DarkLotus
+                    WalkGrid[i % SquaresCountY, i / SquaresCountY] = (byte)(Squares[i].Flags & Scene.NavCellFlags.AllowWalk);
+                   // Set the grid to 0x1 if its walkable, left as 0 if not. - DarkLotus
                 }
 
                 stream.Position += (3 * 4);
@@ -131,7 +131,7 @@ namespace d3sandbox
             public float Float0 { get; private set; }
             public float Float1 { get; private set; }
             public int Int2 { get; private set; }
-            public Vector2I V0 { get; private set; }
+            public Vector2D V0 { get; private set; }
             public List<NavGridSquare> GridSquares = new List<NavGridSquare>();
             public int Int3 { get; private set; }
             public List<NavCellLookup> CellLookups = new List<NavCellLookup>();
@@ -151,7 +151,7 @@ namespace d3sandbox
                 this.Float0 = stream.ReadValueF32();
                 this.Float1 = stream.ReadValueF32();
                 this.Int2 = stream.ReadValueS32();
-                this.V0 = new Vector2I(stream);
+                this.V0 = new Vector2D(stream);
 
                 stream.Position += (3 * 4);
                 this.GridSquares = stream.ReadSerializedData<NavGridSquare>();
@@ -180,16 +180,16 @@ namespace d3sandbox
 
         public class NavCell : ISerializableData
         {
-            public Vector3 Min { get; private set; }
-            public Vector3 Max { get; private set; }
+            public Vector3D Min { get; private set; }
+            public Vector3D Max { get; private set; }
             public NavCellFlags Flags { get; private set; }
             public short NeighbourCount { get; private set; }
             public int NeighborsIndex { get; private set; }
 
             public void Read(MpqFileStream stream)
             {
-                this.Min = new Vector3(stream.ReadValueF32(), stream.ReadValueF32(), stream.ReadValueF32());
-                this.Max = new Vector3(stream.ReadValueF32(), stream.ReadValueF32(), stream.ReadValueF32());
+                this.Min = new Vector3D(stream.ReadValueF32(), stream.ReadValueF32(), stream.ReadValueF32());
+                this.Max = new Vector3D(stream.ReadValueF32(), stream.ReadValueF32(), stream.ReadValueF32());
                 this.Flags = (NavCellFlags)stream.ReadValueS16();
                 this.NeighbourCount = stream.ReadValueS16();
                 this.NeighborsIndex = stream.ReadValueS32();

@@ -61,6 +61,8 @@ namespace d3sandbox
         private uint pObjMgr;
         private uint pRActors;
         private uint pScenes;
+        private uint pUI;
+        private uint pPlayer;
 
         private uint pTLSObjMgr;
         private uint pACDs;
@@ -73,11 +75,11 @@ namespace d3sandbox
         {
             // Initialize the GBID->HeroClass lookup table
             gbidHeroClasses = new Dictionary<uint, HeroClass>();
-            gbidHeroClasses.Add(Utils.HashItemName("Barbarian"), HeroClass.Barbarian);
-            gbidHeroClasses.Add(Utils.HashItemName("DemonHunter"), HeroClass.DemonHunter);
-            gbidHeroClasses.Add(Utils.HashItemName("Monk"), HeroClass.Monk);
-            gbidHeroClasses.Add(Utils.HashItemName("WitchDoctor"), HeroClass.WitchDoctor);
-            gbidHeroClasses.Add(Utils.HashItemName("Wizard"), HeroClass.Wizard);
+            gbidHeroClasses.Add(Utils.HashLowerCase("Barbarian"), HeroClass.Barbarian);
+            gbidHeroClasses.Add(Utils.HashLowerCase("DemonHunter"), HeroClass.DemonHunter);
+            gbidHeroClasses.Add(Utils.HashLowerCase("Monk"), HeroClass.Monk);
+            gbidHeroClasses.Add(Utils.HashLowerCase("WitchDoctor"), HeroClass.WitchDoctor);
+            gbidHeroClasses.Add(Utils.HashLowerCase("Wizard"), HeroClass.Wizard);
         }
 
         public MemoryReader(BlackMagic d3)
@@ -92,6 +94,8 @@ namespace d3sandbox
 
             pRActors = GetRActorContainer();
             pScenes = GetScenesContainer();
+            pUI = GetUIContainer();
+            pPlayer = GetPlayerPtr();
             pACDs = GetACDContainer();
             pAttributes = GetAttributeContainer();
             pD3DDevice = GetDirect3DDevice();
@@ -103,7 +107,7 @@ namespace d3sandbox
         /// </summary>
         public Player GetPlayer()
         {
-            uint id = GetPlayerRActorID();
+            uint id = d3.ReadUInt(pPlayer + 8);
             if (id == Offsets.INVALID)
                 return null;
 
@@ -121,6 +125,16 @@ namespace d3sandbox
             Player player = new Player(actor, acd);
             player.Attributes = GetEntityAttributes(player);
             return player;
+        }
+
+        public uint[] GetActiveSkills()
+        {
+            byte[] data = d3.ReadBytes(pPlayer + 0xBC, 128);
+            
+            uint[] skills = new uint[9];
+            for (int i = 0; i < skills.Length; i++)
+                skills[i] = BitConverter.ToUInt32(data, i * 8);
+            return skills;
         }
 
         /// <summary>
@@ -234,6 +248,16 @@ namespace d3sandbox
             return attributes;
         }
 
+        public string GetTextboxValue(string uiHandle)
+        {
+            uint ptr = GetUIPtr(uiHandle);
+            if (ptr == Offsets.INVALID)
+                return null;
+
+            int length = d3.ReadInt(ptr + 0xA38);
+            return d3.ReadASCIIString(d3.ReadUInt(ptr + 0xA28), length);
+        }
+
         private GameAttributeValue ReadAttribute(uint ptr, GameAttribute attrib)
         {
             if (attrib.IsInteger)
@@ -242,10 +266,7 @@ namespace d3sandbox
                 return new GameAttributeValue(d3.ReadFloat(ptr + 8));
         }
 
-        /// <summary>
-        /// Fetch the RActor ID of the current player
-        /// </summary>
-        private uint GetPlayerRActorID()
+        private uint GetPlayerPtr()
         {
             uint v0 = d3.ReadUInt(d3.ReadUInt(pObjMgr + 2352));
             if (v0 == Offsets.INVALID)
@@ -259,7 +280,27 @@ namespace d3sandbox
             if (v2 == 0)
                 return Offsets.INVALID;
 
-            return d3.ReadUInt(v2 + 8);
+            return v2;
+        }
+
+        private uint GetUIPtr(string uiHandle)
+        {
+            uint id = Utils.HashLowerCase(uiHandle);
+            uint index = id & 0x7FF;
+            uint uiPtrArray = d3.ReadUInt(d3.ReadUInt(pUI) + 8);
+            uint lastAddr = d3.ReadUInt(uiPtrArray + (index * 4));
+
+            while (true)
+            {
+                if (lastAddr == 0)
+                    return Offsets.INVALID;
+
+                uint nextAddr = d3.ReadUInt(d3.ReadUInt(lastAddr + 0x20C) + 0x20);
+                if (nextAddr == id)
+                    return d3.ReadUInt(lastAddr + 0x20C);
+
+                lastAddr = d3.ReadUInt(lastAddr);
+            }
         }
 
         /// <summary>
@@ -282,6 +323,15 @@ namespace d3sandbox
             if (d3.ReadASCIIString(pScenes, 7) == "Scenes")
                 return pScenes;
             return Offsets.INVALID;
+        }
+
+        /// <summary>
+        /// Fetches the global pointer to the UI object container
+        /// </summary>
+        private uint GetUIContainer()
+        {
+            uint pUI = d3.ReadUInt(pObjMgr + 0x920);
+            return pUI;
         }
 
         /// <summary>

@@ -691,7 +691,7 @@ namespace d3sandbox
         public static readonly GameAttributeI Summoning_Machine_Spawn_Count = new GameAttributeI(669, 0, 15, 0, 1, "", "", "Summoning_Machine_Spawn_Count", GameAttributeEncoding.IntMinMax, 0, 0, 4095, 12);
         public static readonly GameAttributeI Summoning_Machine_Next_Spawn_Ticks = new GameAttributeI(670, 0, -1, 0, 1, "", "", "Summoning_Machine_Next_Spawn_Ticks", GameAttributeEncoding.Int, 0, 0, 0, 32);
         public static readonly GameAttributeI Summoning_Machine_Spawn_Team = new GameAttributeI(671, -1, -1, 1, 1, "", "", "Summoning_Machine_Spawn_Team", GameAttributeEncoding.IntMinMax, 0, -1, 23, 5);
-        public static readonly GameAttributeF Screen_Attack_Radius_Constant = new GameAttributeF(672, 1114636288, -1, 3, 0, "", "", "Screen_Attack_Radius_Constant", GameAttributeEncoding.Float16, 0, 0, 0, 16);
+        public static readonly GameAttributeF Screen_Attack_Radius_Constant = new GameAttributeF(672, 60.0f, -1, 3, 0, "", "", "Screen_Attack_Radius_Constant", GameAttributeEncoding.Float16, 0, 0, 0, 16);
         public static readonly GameAttributeF Damage_Done_Reduction_Percent = new GameAttributeF(673, 0, -1, 1, 0, "", "", "Damage_Done_Reduction_Percent", GameAttributeEncoding.Float16, 0, 0, 0, 16);
         public static readonly GameAttributeI Set_Item_Count = new GameAttributeI(674, 0, 17, 0, 1, "", "", "Set_Item_Count", GameAttributeEncoding.Int, 31, 0, 0, 32);
         public static readonly GameAttributeF Spawner_Countdown_Percent = new GameAttributeF(675, 0, -1, 1, 0, "", "", "Spawner_Countdown_Percent", GameAttributeEncoding.Float16, 31, 0, 0, 16);
@@ -720,9 +720,9 @@ namespace d3sandbox
         public static readonly GameAttributeI PVP_Current_Death_Streak = new GameAttributeI(698, 0, -1, 0, 1, "", "", "PVP_Current_Death_Streak", GameAttributeEncoding.Int, 1, 0, 0, 32);
         public static readonly GameAttributeI PVP_Longest_Kill_Streak = new GameAttributeI(699, 0, -1, 0, 1, "", "", "PVP_Longest_Kill_Streak", GameAttributeEncoding.Int, 1, 0, 0, 32);
         public static readonly GameAttributeI PVP_Longest_Death_Streak = new GameAttributeI(700, 0, -1, 0, 1, "", "", "PVP_Longest_Death_Streak", GameAttributeEncoding.Int, 1, 0, 0, 32);
-        public static readonly GameAttributeF Turn_Rate_Scalar = new GameAttributeF(701, 1065353216, -1, 5, 0, "", "", "Turn_Rate_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
-        public static readonly GameAttributeF Turn_Accel_Scalar = new GameAttributeF(702, 1065353216, -1, 5, 0, "", "", "Turn_Accel_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
-        public static readonly GameAttributeF Turn_Deccel_Scalar = new GameAttributeF(703, 1065353216, -1, 5, 0, "", "", "Turn_Deccel_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
+        public static readonly GameAttributeF Turn_Rate_Scalar = new GameAttributeF(701, 1.0f, -1, 5, 0, "", "", "Turn_Rate_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
+        public static readonly GameAttributeF Turn_Accel_Scalar = new GameAttributeF(702, 1.0f, -1, 5, 0, "", "", "Turn_Accel_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
+        public static readonly GameAttributeF Turn_Deccel_Scalar = new GameAttributeF(703, 1.0f, -1, 5, 0, "", "", "Turn_Deccel_Scalar", GameAttributeEncoding.Float16, 31, 0, 0, 16);
         public static readonly GameAttributeB No_Health_Drop = new GameAttributeB(704, 0, -1, 1, 1, "", "", "No_Health_Drop", GameAttributeEncoding.IntMinMax, 0, 0, 1, 1);
         public static readonly GameAttributeB Leader = new GameAttributeB(705, 0, -1, 1, 1, "", "", "Leader", GameAttributeEncoding.IntMinMax, 0, 0, 1, 1);
         public static readonly GameAttributeB IsTrialActor = new GameAttributeB(706, 0, -1, 1, 1, "", "", "IsTrialActor", GameAttributeEncoding.IntMinMax, 31, 0, 1, 1);

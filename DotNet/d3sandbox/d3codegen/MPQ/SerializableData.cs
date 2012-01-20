@@ -1,10 +1,26 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2011 mooege project
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 using System.Collections.Generic;
-using System.Text;
 using CrystalMpq;
 using Gibbed.IO;
 
-namespace d3sandbox
+namespace Mooege.Common.MPQ
 {
     /// <summary>
     /// Interface for serializable data structures.
@@ -23,6 +39,8 @@ namespace d3sandbox
     /// </summary>
     public static class MpqFileStreamExtensions
     {
+        private static Logging.Logger logger = new Logging.Logger("MPQ deserialization");
+
         /// <summary>
         /// Reads all available items for given type.
         /// </summary>
@@ -35,11 +53,7 @@ namespace d3sandbox
             int size = stream.ReadValueS32(); // size of serialized data.
 
             if (offset == 0 && size != 0)
-            {
-                throw new InvalidOperationException(
-                    "Pointer error while deserializing list of " + typeof(T).Name +
-                    ". Make sure you dont read too much or too few fields!");
-            }
+                logger.Error("Pointer error while deserializing list of {0}. Make sure you dont read too much or too few fields!", typeof(T).Name); 
 
             var items = new List<T>(); // read-items if any.            
             if (size <= 0 || offset == 0) return items;
@@ -55,11 +69,7 @@ namespace d3sandbox
             }
 
             if (stream.Position != offset + size + 16)
-            {
-                throw new InvalidOperationException(
-                    "Size mismatch while deserializing list of " + typeof(T).Name +
-                    ". Make sure you dont read too much or too few fields!");
-            }
+                logger.Error("Size mismatch while deserializing list of {0}. Make sure you dont read too much or too few fields!", typeof(T).Name); 
 
             stream.Position = oldPos;
             return items;
@@ -84,11 +94,7 @@ namespace d3sandbox
             t.Read(stream);
 
             if (stream.Position != offset + size + 16)
-            {
-                throw new InvalidOperationException(
-                    "Size mismatch while deserializing single item of " + typeof(T).Name +
-                    ". Make sure you dont read too much or too few fields!");
-            }
+                logger.Error("Size mismatch while deserializing single item of {0}. Make sure you dont read too much or too few fields!", typeof(T).Name); 
 
             stream.Position = oldPos;
             return t;
@@ -100,7 +106,7 @@ namespace d3sandbox
         /// <param name="stream">The MPQFileStream to read from.</param>
         /// <returns>The list of read ints.</returns>
         public static List<int> ReadSerializedInts(this MpqFileStream stream)
-        {
+        {            
             int offset = stream.ReadValueS32(); // ofset for serialized data.
             int size = stream.ReadValueS32(); // size of serialized data.
 
@@ -180,7 +186,7 @@ namespace d3sandbox
             var oldPos = stream.Position;
             stream.Position = offset + 16; // offset is relative to actual sno data start, so add that 16 bytes file header to get actual position. /raist
 
-            @string = stream.ReadString((uint)size, true);
+            @string = stream.ReadString((uint) size, true);
             stream.Position = oldPos;
 
             return @string;

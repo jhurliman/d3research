@@ -19,6 +19,8 @@ namespace d3sandbox
         public const uint TLS_INDEX = 0x013EFD70;
         public const uint TLS_OFFSET = 0xE10;
 
+        public const uint METHOD_MESSAGEBOX = 0x00E34430;
+
         public const uint D3DMANAGER_PTR = 0x014AA8F8;
         public const uint D3DMANAGER_ADAPTER_OFFSET = 0x4A4;
         public const uint D3DMANAGER_DEVICE_OFFSET = 0x4A8;
