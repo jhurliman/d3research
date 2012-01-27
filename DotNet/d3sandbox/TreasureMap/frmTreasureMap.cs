@@ -136,7 +136,10 @@ namespace TreasureMap
                 Log(LogLevel.Info, "Waiting for Diablo III process...");
 
                 while (!d3Api.IsDiabloRunning())
+                {
+                    if (!running) return;
                     Thread.Sleep(500);
+                }
             }
             Log(LogLevel.Info, "Initialized D3 API");
 
@@ -145,7 +148,10 @@ namespace TreasureMap
                 Log(LogLevel.Info, "Waiting for Diablo III game...");
 
                 while (!d3Api.Init())
+                {
+                    if (!running) return;
                     Thread.Sleep(500);
+                }
             }
             
             world = d3Api.InitWorld();

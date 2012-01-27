@@ -19,8 +19,46 @@ namespace d3codegen
             LogManager.Enabled = true;
             LogManager.AttachLogTarget(new ConsoleTarget(Logger.Level.Trace, Logger.Level.Fatal, false));
 
-            var actors = MPQStorage.Data.Assets[SNOGroup.Actor];
-            var monsters = MPQStorage.Data.Assets[SNOGroup.Monster];
+            #region Scenes
+
+            using (StreamWriter navWriter = new StreamWriter("NavCells.cs"))
+            {
+                navWriter.WriteLine("using System;");
+                navWriter.WriteLine("using System.Collections.Generic;");
+                navWriter.WriteLine();
+                navWriter.WriteLine("namespace libdiablo3.Api");
+                navWriter.WriteLine("{");
+                navWriter.WriteLine("    public static class NavCells");
+                navWriter.WriteLine("    {");
+                navWriter.WriteLine("        public static readonly Dictionary<int, NavCell[]> SceneNavCells = new Dictionary<int, NavCell[]>");
+                navWriter.WriteLine("        {");
+
+                var scenes = MPQStorage.Data.Assets[SNOGroup.Scene];
+
+                foreach (Asset asset in scenes.Values)
+                {
+                    Scene scene = asset.Data as Scene;
+
+                    navWriter.Write("            {{ {0}, new NavCell[] {{", asset.SNOId);
+
+                    foreach (Scene.NavCell cell in scene.NavZone.NavCells)
+                    {
+                        navWriter.Write(" new NavCell({0:0.###}f, {1:0.###}f, {2:0.###}f, {3:0.###}f, {4:0.###}f, {5:0.###}f, {6}),",
+                            cell.Min.X, cell.Min.Y, cell.Min.Z,
+                            cell.Max.X, cell.Max.Y, cell.Max.Z,
+                            (int)cell.Flags);
+                    }
+
+                    navWriter.WriteLine(" } },");
+                }
+
+                navWriter.WriteLine("        };");
+                navWriter.WriteLine("    };");
+                navWriter.WriteLine("};");
+                navWriter.WriteLine();
+            }
+
+            #endregion Scenes
 
             using (StreamWriter enumWriter = new StreamWriter("ActorName.cs"))
             {
@@ -42,6 +80,9 @@ namespace d3codegen
                     templateWriter.WriteLine("    {");
                     templateWriter.WriteLine("        public static readonly Dictionary<int, Actor> Actors = new Dictionary<int, Actor>");
                     templateWriter.WriteLine("        {");
+
+                    var actors = MPQStorage.Data.Assets[SNOGroup.Actor];
+                    var monsters = MPQStorage.Data.Assets[SNOGroup.Monster];
 
                     foreach (Asset asset in actors.Values)
                     {

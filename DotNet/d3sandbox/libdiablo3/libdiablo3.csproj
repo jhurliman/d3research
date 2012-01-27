@@ -43,6 +43,7 @@
     <Compile Include="Api\Buff.cs" />
     <Compile Include="Api\Diablo3Api.cs" />
     <Compile Include="Api\Item.cs" />
+    <Compile Include="Api\NavCell.cs" />
     <Compile Include="Api\NPC.cs" />
     <Compile Include="Api\Player.cs" />
     <Compile Include="Api\PowerFlags.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Api\Monster.cs" />
     <Compile Include="Api\PowerName.cs" />
     <Compile Include="Api\Scene.cs" />
+    <Compile Include="Api\NavCells.cs" />
     <Compile Include="Api\TeamType.cs" />
     <Compile Include="Api\World.cs" />
     <Compile Include="Log.cs" />

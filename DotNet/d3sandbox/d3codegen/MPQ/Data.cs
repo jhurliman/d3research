@@ -35,14 +35,14 @@ namespace Mooege.Common.MPQ
         public readonly Dictionary<SNOGroup, Type> Parsers = new Dictionary<SNOGroup, Type>();
         private readonly List<Task> _tasks = new List<Task>();
 
-        private HashSet<int> alreadyLoaded = new HashSet<int>();
         private int parsedTasks = 0;
         
         private static readonly SNOGroup[] PatchExceptions = new[] { SNOGroup.TimedEvent, SNOGroup.Script, SNOGroup.AiBehavior, SNOGroup.AiState, SNOGroup.Conductor, SNOGroup.FlagSet, SNOGroup.Code, SNOGroup.Worlds, SNOGroup.LevelArea };
 
         // Only load a subset of all the SNO files
-        private static readonly SNOGroup[] LoadGroups = new[] {
-            SNOGroup.Actor, SNOGroup.EffectGroup, SNOGroup.FlagSet, SNOGroup.GameBalance,
+        private static readonly HashSet<SNOGroup> LoadGroups = new HashSet<SNOGroup>
+        {
+            SNOGroup.Actor, SNOGroup.EffectGroup, SNOGroup.FlagSet,
             SNOGroup.Globals, SNOGroup.Hero, SNOGroup.MarkerSet, SNOGroup.Monster, 
             SNOGroup.Power, SNOGroup.Scene, SNOGroup.SceneGroup, SNOGroup.Script
         };
@@ -76,11 +76,11 @@ namespace Mooege.Common.MPQ
 
         private void LoadCatalogs()
         {
-            this.LoadCatalog("CoreTOC.dat", false, LoadGroups.ToList()); // as of patch beta patch 7841, blizz renamed TOC.dat as CoreTOC.dat
-            this.LoadCatalog("TOC.dat", true, LoadGroups.ToList()); // used for reading assets patched to zero bytes and removed from mainCatalog file.  
+            this.LoadCatalog("CoreTOC.dat", false, LoadGroups); // as of patch beta patch 7841, blizz renamed TOC.dat as CoreTOC.dat
+            //this.LoadCatalog("TOC.dat", true, LoadGroupsSet); // used for reading assets patched to zero bytes and removed from mainCatalog file.  
         }
 
-        private void LoadCatalog(string fileName, bool useBaseMPQ = false, List<SNOGroup> groupsToLoad = null)
+        private void LoadCatalog(string fileName, bool useBaseMPQ = false, HashSet<SNOGroup> groupsToLoad = null)
         {
             var catalogFile = this.GetFile(fileName, useBaseMPQ);
             this._tasks.Clear();
@@ -96,16 +96,14 @@ namespace Mooege.Common.MPQ
 
             var timerStart = DateTime.Now;
 
+            int count = 0;
+
             // read all assets from the catalog first and process them (ie. find the parser if any available).
             while (stream.Position < stream.Length)
             {
                 var group = (SNOGroup)stream.ReadValueS32();
                 var snoId = stream.ReadValueS32();
                 var name = stream.ReadString(128, true);
-
-                if (alreadyLoaded.Contains(snoId))
-                    continue;
-                alreadyLoaded.Add(snoId);
 
                 if (groupsToLoad != null && !groupsToLoad.Contains(group)) // if we're handled groups to load, just ignore the ones not in the list.
                     continue;
@@ -116,6 +114,9 @@ namespace Mooege.Common.MPQ
                     continue;
                 
                 this.ProcessAsset(asset); // process the asset.
+
+                if (++count % 1000 == 0)
+                    Logger.Trace("Processed " + count + " assets");
             }
 
             stream.Close();
