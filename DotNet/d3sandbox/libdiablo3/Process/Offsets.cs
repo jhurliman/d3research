@@ -4,8 +4,8 @@ namespace libdiablo3.Process
 {
     public static class Offsets
     {
-        public const int VERSION = 8101;
-        public const string MD5_CLIENT = "CB3BFA433C8DCC0A6B966BE3A9035BF8";
+        public const int VERSION = 8296;
+        public const string MD5_CLIENT = "691D0737120871FF85F5065CB3D53588";
 
         public const uint INVALID = 0xFFFFFFFF;
 
@@ -34,16 +34,15 @@ namespace libdiablo3.Process
         public const uint PLAYER_OFFSET2 = 0xA8;
         public const uint PLAYER_OFFSET3 = 0x58;
 
-        public const uint METHOD_MESSAGEBOX = 0x00E34430;
-        public const uint METHOD_USEPOWER = 0x00941640;
+        public const uint METHOD_USEPOWER = 0x00942540;
 
-        public const uint OBJMGR = 0x140593C;
-        public const uint OBJMGR_ACTORS_OFFSET = 0x8AC;
-        public const uint OBJMGR_SCENES_OFFSET = 0x8F0;
-        public const uint OBJMGR_UI_OFFSET = 0x920;
-        public const uint OBJMGR_PLAYER_OFFSET = 0x930;
+        public const uint OBJMGR = 0x0143BE24;
+        public const uint OBJMGR_ACTORS_OFFSET = 0x8B0;
+        public const uint OBJMGR_SCENES_OFFSET = 0x8F4;
+        public const uint OBJMGR_UI_OFFSET = 0x924;
+        public const uint OBJMGR_PLAYER_OFFSET = 0x934;
 
-        public const uint TLS_INDEX = 0x013EFD70;
+        public const uint TLS_INDEX = 0x01425F50;
         public const uint TLS_OFFSET = 0xE10;
         public const uint TLS_ATTRIBUTES_OFFSET1 = 0xC8;
         public const uint TLS_ATTRIBUTES_OFFSET2 = 0x70;
@@ -55,7 +54,7 @@ namespace libdiablo3.Process
         public const uint UI_TEXTBOX_STR = 0xA28;
         public const uint UI_TEXTBOX_LENGTH = 0xA38;
 
-        public const uint D3DMANAGER_PTR = 0x014AA8F8;
+        public const uint D3DMANAGER_PTR = 0x014E1680;
         public const uint D3DMANAGER_ADAPTER_OFFSET = 0x4A4;
         public const uint D3DMANAGER_DEVICE_OFFSET = 0x4A8;
         public const uint D3D_DEVICE_ENDSCENE_OFFSET = 0xA8;

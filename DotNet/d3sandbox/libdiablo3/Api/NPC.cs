@@ -12,8 +12,8 @@ namespace libdiablo3.Api
         public int HitpointsCurrent { get; internal set; }
         public int HitpointsMax { get; internal set; }
 
-        public NPC(int snoID, int teamID)
-            : base(snoID, (int)ActorCategory.Monster, teamID)
+        public NPC(int snoID, int category, int teamID)
+            : base(snoID, category, teamID)
         {
         }
 

@@ -60,12 +60,7 @@ namespace libdiablo3.Api
                     md5Bytes = new MD5CryptoServiceProvider().ComputeHash(exeStream);
                 string md5Hash = ProcessUtils.BytesToHexString(md5Bytes);
                 if (md5Hash != Offsets.MD5_CLIENT)
-                {
-                    d3.Close();
-                    d3 = null;
-                    Log.Error("MD5 checksum failed: " + md5Hash);
-                    return false;
-                }
+                    throw new MemoryReadException("MD5 checksum failed: " + md5Hash, 0);
 
                 computedHash = true;
             }

@@ -141,17 +141,25 @@ namespace TreasureMap
                     Thread.Sleep(500);
                 }
             }
-            Log(LogLevel.Info, "Initialized D3 API");
+            Log(LogLevel.Info, "Found Diablo III process");
 
-            if (!d3Api.Init())
+            try
             {
-                Log(LogLevel.Info, "Waiting for Diablo III game...");
-
-                while (!d3Api.Init())
+                if (!d3Api.Init())
                 {
-                    if (!running) return;
-                    Thread.Sleep(500);
+                    Log(LogLevel.Info, "Waiting for Diablo III game...");
+
+                    while (!d3Api.Init())
+                    {
+                        if (!running) return;
+                        Thread.Sleep(500);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log(LogLevel.Error, "Failed to initialize the D3 API: " + ex.Message);
+                return;
             }
             
             world = d3Api.InitWorld();
