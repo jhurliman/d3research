@@ -19,7 +19,7 @@ namespace libdiablo3.Api
     {
         public readonly HeroType HeroType;
 
-        public Hero(int snoID)
+        internal Hero(int snoID)
             : base(snoID, (int)ActorCategory.Player, (int)TeamType.Team)
         {
             string name = ((ActorName)snoID).ToString();
@@ -37,6 +37,16 @@ namespace libdiablo3.Api
                 case "wizard":
                     HeroType = HeroType.Wizard; break;
             }
+        }
+
+        internal static Hero CreateInstance(Hero template, int instanceID, AABB aabb,
+            Vector2f direction)
+        {
+            Hero hero = template.MemberwiseClone() as Hero;
+            hero.InstanceID = instanceID;
+            hero.BoundingBox = aabb;
+            hero.Direction = direction;
+            return hero;
         }
     }
 }

@@ -40,5 +40,20 @@ namespace libdiablo3.Api
                 return Equals(actor);
             return false;
         }
+
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
+
+        internal static Actor CreateInstance(Actor template, int instanceID, AABB aabb,
+            Vector2f direction)
+        {
+            Actor actor = template.MemberwiseClone() as Actor;
+            actor.InstanceID = instanceID;
+            actor.BoundingBox = aabb;
+            actor.Direction = direction;
+            return actor;
+        }
     }
 }

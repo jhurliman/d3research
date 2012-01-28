@@ -21,41 +21,31 @@ namespace d3codegen
 
             #region Scenes
 
-            using (StreamWriter navWriter = new StreamWriter("NavCells.cs"))
+            using (FileStream navStream = new FileStream("NavCells.bin", FileMode.Create, FileAccess.Write))
             {
-                navWriter.WriteLine("using System;");
-                navWriter.WriteLine("using System.Collections.Generic;");
-                navWriter.WriteLine();
-                navWriter.WriteLine("namespace libdiablo3.Api");
-                navWriter.WriteLine("{");
-                navWriter.WriteLine("    public static class NavCells");
-                navWriter.WriteLine("    {");
-                navWriter.WriteLine("        public static readonly Dictionary<int, NavCell[]> SceneNavCells = new Dictionary<int, NavCell[]>");
-                navWriter.WriteLine("        {");
-
-                var scenes = MPQStorage.Data.Assets[SNOGroup.Scene];
-
-                foreach (Asset asset in scenes.Values)
+                using (BinaryWriter navWriter = new BinaryWriter(navStream))
                 {
-                    Scene scene = asset.Data as Scene;
+                    var scenes = MPQStorage.Data.Assets[SNOGroup.Scene];
 
-                    navWriter.Write("            {{ {0}, new NavCell[] {{", asset.SNOId);
-
-                    foreach (Scene.NavCell cell in scene.NavZone.NavCells)
+                    foreach (Asset asset in scenes.Values)
                     {
-                        navWriter.Write(" new NavCell({0:0.###}f, {1:0.###}f, {2:0.###}f, {3:0.###}f, {4:0.###}f, {5:0.###}f, {6}),",
-                            cell.Min.X, cell.Min.Y, cell.Min.Z,
-                            cell.Max.X, cell.Max.Y, cell.Max.Z,
-                            (int)cell.Flags);
+                        Scene scene = asset.Data as Scene;
+
+                        navWriter.Write(asset.SNOId);
+                        navWriter.Write(scene.NavZone.NavCells.Count);
+
+                        foreach (Scene.NavCell cell in scene.NavZone.NavCells)
+                        {
+                            navWriter.Write(cell.Min.X);
+                            navWriter.Write(cell.Min.Y);
+                            navWriter.Write(cell.Min.Z);
+                            navWriter.Write(cell.Max.X);
+                            navWriter.Write(cell.Max.Y);
+                            navWriter.Write(cell.Max.Z);
+                            navWriter.Write((int)cell.Flags);
+                        }
                     }
-
-                    navWriter.WriteLine(" } },");
                 }
-
-                navWriter.WriteLine("        };");
-                navWriter.WriteLine("    };");
-                navWriter.WriteLine("};");
-                navWriter.WriteLine();
             }
 
             #endregion Scenes

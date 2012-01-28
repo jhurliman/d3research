@@ -12,6 +12,7 @@ namespace libdiablo3.Api
         public Scene[] Scenes { get; internal set; }
         public Hero[] Heros { get; internal set; }
         public Monster[] Monsters { get; internal set; }
+        public NPC[] NPCs { get; internal set; }
         public Item[] Items { get; internal set; }
         public Gizmo[] Gizmos { get; internal set; }
         public Actor[] OtherActors { get; internal set; }
@@ -23,18 +24,6 @@ namespace libdiablo3.Api
         public World()
         {
             enumerator = new WorldActorEnumerator(this);
-        }
-
-        public Hero[] GetPartyMembers()
-        {
-            // FIXME:
-            return new Hero[] { (Hero)Me };
-        }
-
-        public Actor[] GetNPCs()
-        {
-            // FIXME:
-            return null;
         }
 
         public Actor GetClosestWaypoint()

@@ -149,6 +149,8 @@ namespace libdiablo3.Process
         {
             // Grab the size of the RActors array
             int actorArraySize = D3.ReadInt(pRActors + Offsets.ARRAY_SIZE_OFFSET);
+            if (actorArraySize == 0)
+                return new List<D3Actor>(0);
 
             // Grab the first actor
             uint pRActor = D3.ReadUInt(D3.ReadUInt(pRActors + Offsets.ARRAY_START_PTR_OFFSET));
@@ -243,6 +245,21 @@ namespace libdiablo3.Process
                         ptr = D3.ReadUInt(ptr);
                     }
                 }
+            }
+
+            return attributes;
+        }
+
+        public Dictionary<D3Attribute, D3AttributeValue> GetActorAttributesSlow(D3Actor actor)
+        {
+            Dictionary<D3Attribute, D3AttributeValue> attributes = new Dictionary<D3Attribute, D3AttributeValue>();
+
+            for (var i = 0; i < D3Attribute.Attributes.Length; i++)
+            {
+                D3Attribute attribute = D3Attribute.Attributes[i];
+                D3AttributeValue? value = GetAttribute(actor, attribute);
+                if (value.HasValue)
+                    attributes.Add(attribute, value.Value);
             }
 
             return attributes;

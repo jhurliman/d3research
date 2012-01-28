@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -19,14 +20,21 @@ namespace TreasureMap
         private Thread updateThread;
         private Diablo3Api d3Api;
         private World world;
-        private Graphics map;
+
+        private Bitmap stageBitmap;
+        private Bitmap previewBitmap;
+        private readonly Pen masterScenePen = new Pen(Color.Black, 1.0f);
+        private readonly Pen subScenePen = new Pen(Color.DarkGray, 1.0f);
+        private readonly Brush unwalkableBrush = Brushes.Red;
+        private readonly Pen unwalkablePen = new Pen(Color.Red, 1.0f);
+        private readonly Brush walkableBrush = Brushes.Blue;
+        private readonly Pen walkablePen = new Pen(Color.Blue, 1.0f);
 
         public frmTreasureMap()
         {
             InitializeComponent();
 
             // FIXME: Check for elevated privileges and relaunch if we don't have them
-            map = picMap.CreateGraphics();
             this.DoubleBuffered = true;
 
             running = true;
@@ -45,10 +53,35 @@ namespace TreasureMap
 
         private void UpdateMap()
         {
+            stageBitmap = Draw();
+            previewBitmap = ResizeImage(stageBitmap, picPreview.Width, picPreview.Height);
+            UpdateControls();
+        }
+
+        private delegate void UpdateControlsCallback();
+        private void UpdateControls()
+        {
+            try
+            {
+                if (picMap.InvokeRequired)
+                {
+                    this.Invoke(new UpdateControlsCallback(UpdateControls));
+                    return;
+                }
+
+                picMap.Image = stageBitmap;
+                picPreview.Image = previewBitmap;
+            }
+            catch { }
+        }
+
+        private Bitmap Draw()
+        {
+            // Find the world bounding box
+            // FIXME: This should use scenes, not actors
             AABB worldBox = new AABB(
                 new Vector3f(Single.MaxValue, Single.MaxValue, 0f),
                 new Vector3f(Single.MinValue, Single.MinValue, 0f));
-
             foreach (Actor actor in world.AllActors)
             {
                 AABB aabb = actor.BoundingBox;
@@ -61,72 +94,129 @@ namespace TreasureMap
                 if (aabb.Max.Y > worldBox.Max.Y) worldBox.Max.Y = aabb.Max.Y;
             }
 
-            float worldWidth = worldBox.Max.X - worldBox.Min.X;
-            float worldHeight = worldBox.Max.Y - worldBox.Min.Y;
+            int width = Math.Max((int)worldBox.Max.X + 1, 256);
+            int height = Math.Max((int)worldBox.Max.Y + 1, 256);
 
-            int width = picMap.Width;
-            int height = picMap.Height;
+            // Create the bitmap
+            var bitmap = new Bitmap(width, height, PixelFormat.Format16bppRgb555);
 
-            Pen actorPen = new Pen(Color.Blue);
-            Pen npcPen = new Pen(Color.Purple);
-            Pen hostilePen = new Pen(Color.Red);
-            Pen itemPen = new Pen(Color.Green);
-            Pen goldPen = new Pen(Color.Gold);
-            Pen heroPen = new Pen(Color.Fuchsia);
-
-            try
+            using (var graphics = Graphics.FromImage(bitmap))
             {
-                map.Clear(Color.White);
-                foreach (Actor actor in world.AllActors)
+                graphics.CompositingQuality = CompositingQuality.HighSpeed;
+                graphics.SmoothingMode = SmoothingMode.HighSpeed;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighSpeed;
+                graphics.InterpolationMode = InterpolationMode.Default;
+
+                graphics.FillRectangle(Brushes.LightGray, 0, 0, bitmap.Width, bitmap.Height);
+
+                this.DrawShapes(graphics);
+
+                //if (this.PrintSceneLabels)
+                //    this.DrawLabels(graphics);
+
+                graphics.Save();
+            }
+
+            return bitmap;
+        }
+
+        private void DrawShapes(Graphics graphics)
+        {
+            foreach (Scene scene in world.Scenes)
+                DrawScene(graphics, scene);
+
+            foreach (Gizmo gizmo in world.Gizmos)
+            {
+                AABB aabb = gizmo.BoundingBox;
+                if (aabb.Min.X == 0f && aabb.Min.Y == 0f) continue;
+                switch (gizmo.GizmoType)
                 {
-                    AABB aabb = actor.BoundingBox;
-                    if (aabb.Min.X == 0f && aabb.Min.Y == 0f)
-                        continue;
-
-                    int x1 = (int)(((aabb.Min.X - worldBox.Min.X) / worldWidth) * width);
-                    int y1 = (int)(((aabb.Min.Y - worldBox.Min.Y) / worldHeight) * height);
-                    int x2 = (int)(((aabb.Max.X - worldBox.Min.X) / worldWidth) * width);
-                    int y2 = (int)(((aabb.Max.Y - worldBox.Min.Y) / worldHeight) * height);
-
-                    int w = Math.Max(x2 - x1, 1);
-                    int h = Math.Max(y2 - y1, 1);
-
-                    Pen pen = actorPen;
-
-                    if (actor.Team == TeamType.Hostile)
-                        pen = hostilePen;
-                    else if (actor.Category == ActorCategory.Item)
-                        pen = itemPen;
-                    else if (actor.Type == ActorName.WitchDoctor_Female)
-                    {
-                        pen = heroPen;
-                        w *= 5;
-                        h *= 5;
-                    }
-                    else if (actor.Team == TeamType.Ally || actor.Team == TeamType.Team)
-                        pen = npcPen;
-
-                    if (actor.Type == ActorName.GoldCoin ||
-                        actor.Type == ActorName.GoldCoin_flippy ||
-                        actor.Type == ActorName.GoldCoins ||
-                        actor.Type == ActorName.GoldLarge ||
-                        actor.Type == ActorName.GoldMedium ||
-                        actor.Type == ActorName.GoldSmall ||
-                        actor.Type == ActorName.PlacedGold)
-                    {
-                        pen = goldPen;
-                    }
-
-                    if (pen == actorPen)
-                        continue;
-
-                    map.DrawRectangle(pen, x1, y1, w, h);
+                    case GizmoGroup.Door:
+                    case GizmoGroup.Portal:
+                    case GizmoGroup.TownPortal:
+                    case GizmoGroup.Waypoint:
+                    case GizmoGroup.HearthPortal:
+                        DrawActor(gizmo, graphics, Brushes.Green, 7);
+                        break;
+                    case GizmoGroup.Barricade:
+                        DrawActor(gizmo, graphics, Brushes.Brown, 7);
+                        break;
+                    case GizmoGroup.Destructible:
+                        break;
+                    case GizmoGroup.DestructibleLootContainer:
+                    case GizmoGroup.LootContainer:
+                    case GizmoGroup.QuestLoot:
+                    case GizmoGroup.Healthwell:
+                        DrawActor(gizmo, graphics, Brushes.DarkViolet, 7);
+                        break;
+                    case GizmoGroup.PlayerSharedStash:
+                    case GizmoGroup.CheckPoint:
+                    case GizmoGroup.BossPortal:
+                    case GizmoGroup.DungeonStonePortal:
+                    case GizmoGroup.Savepoint:
+                        DrawActor(gizmo, graphics, Brushes.Blue, 7);
+                        break;
                 }
             }
-            catch
+            foreach (Hero hero in world.Heros)
             {
-                // Handle the case of the form closing while this thread is still running
+                AABB aabb = hero.BoundingBox;
+                if (aabb.Min.X == 0f && aabb.Min.Y == 0f) continue;
+                DrawActor(hero, graphics, Brushes.White, 10);
             }
+            foreach (Item item in world.Items)
+            {
+                AABB aabb = item.BoundingBox;
+                if (aabb.Min.X == 0f && aabb.Min.Y == 0f) continue;
+                if (item.Type == ActorName.GoldCoin || item.Type == ActorName.GoldCoins)
+                    DrawActor(item, graphics, Brushes.Gold, 7);
+                else
+                    DrawActor(item, graphics, Brushes.CornflowerBlue, 7);
+            }
+            foreach (Monster monster in world.Monsters)
+            {
+                AABB aabb = monster.BoundingBox;
+                if (aabb.Min.X == 0f && aabb.Min.Y == 0f) continue;
+                DrawActor(monster, graphics, Brushes.Red, 7);
+            }
+            foreach (NPC npc in world.NPCs)
+            {
+                AABB aabb = npc.BoundingBox;
+                if (aabb.Min.X == 0f && aabb.Min.Y == 0f) continue;
+                DrawActor(npc, graphics, Brushes.Orange, 7);
+            }
+        }
+
+        private void DrawScene(Graphics graphics, Scene scene)
+        {
+            AABB aabb = scene.BoundingBox;
+            var rect = new Rectangle((int)aabb.Min.X, (int)aabb.Min.Y, (int)aabb.Width, (int)aabb.Height);
+            graphics.DrawRectangle(/*scene.Parent == null ? masterScenePen : subScenePen*/ masterScenePen, rect);
+
+            DrawCells(graphics, scene);
+        }
+
+        private void DrawCells(Graphics graphics, Scene scene)
+        {
+            foreach (NavCell cell in scene.NavCells)
+            {
+                if ((cell.Flags & NavCellFlags.AllowWalk) != NavCellFlags.AllowWalk)
+                    continue;
+
+                AABB aabb = cell.BoundingBox;
+                aabb.Min += scene.BoundingBox.Min;
+                aabb.Max += scene.BoundingBox.Min;
+                var rect = new Rectangle(new Point((int)aabb.Min.X, (int)aabb.Min.Y), new Size((int)aabb.Width, (int)aabb.Height));
+                graphics.DrawRectangle(walkablePen, rect);
+                //graphics.FillRectangle(walkableBrush, rect);
+            }
+        }
+
+        private void DrawActor(Actor actor, Graphics graphics, Brush brush, int radius)
+        {
+            AABB aabb = actor.BoundingBox;
+            var rect = new Rectangle((int)aabb.Min.X, (int)aabb.Min.Y, (int)aabb.Width + radius, (int)aabb.Height + radius);
+            graphics.FillEllipse(brush, rect);
         }
 
         private void UpdateLoop()
@@ -175,6 +265,27 @@ namespace TreasureMap
 
             Log(LogLevel.Info, "Shutting down...");
             d3Api.Shutdown();
+        }
+
+        private static Bitmap ResizeImage(Image image, int width, int height)
+        {
+            //a holder for the result
+            var result = new Bitmap(width, height);
+
+            //use a graphics object to draw the resized image into the bitmap
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                //set the resize quality modes to high quality
+                graphics.CompositingQuality = CompositingQuality.HighQuality;
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.SmoothingMode = SmoothingMode.HighQuality;
+
+                //draw the image into the target bitmap
+                graphics.DrawImage(image, 0, 0, result.Width, result.Height);
+            }
+
+            //return the resulting bitmap
+            return result;
         }
 
         private void LogMessageCallback(LogLevel level, string message, Exception ex)

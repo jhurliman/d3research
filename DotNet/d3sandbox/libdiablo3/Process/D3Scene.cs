@@ -17,6 +17,8 @@ namespace libdiablo3.Process
         public uint WorldID;
         /// <summary>SNO file associated with this scene</summary>
         public uint SnoID;
+        /// <summary>World-relative position of this scene</summary>
+        public Vector3f Position;
         /// <summary>Pointer to the NavMesh for this scene</summary>
         public uint NavMeshPtr;
         /// <summary>Whether this scene is currently active or not</summary>
@@ -31,9 +33,15 @@ namespace libdiablo3.Process
             this.SceneID = BitConverter.ToUInt32(data, 4);
             this.WorldID = BitConverter.ToUInt32(data, 8);
             this.SnoID = BitConverter.ToUInt32(data, 220);
+            this.Position = new Vector3f(data, 240);
             this.NavMeshPtr = BitConverter.ToUInt32(data, 380);
             this.Active = (memReader.D3.ReadUInt(ptr + 396) & 1) != 0;
-            this.Name = memReader.D3.ReadASCIIString(BitConverter.ToUInt32(data, 604) + 8, 128);
+
+            uint ptr2 = BitConverter.ToUInt32(data, 604);
+            if (ptr2 != 0)
+                this.Name = memReader.D3.ReadASCIIString(ptr2 + 8, 128);
+            else
+                this.Name = String.Empty;
         }
 
         public override string ToString()

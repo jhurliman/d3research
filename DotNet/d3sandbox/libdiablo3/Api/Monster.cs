@@ -79,8 +79,8 @@ namespace libdiablo3.Api
 
         public int Level { get; internal set; }
         public int ExperienceGranted { get; internal set; }
-        public int HitpointsCurrent { get; internal set; }
-        public int HitpointsMax { get; internal set; }
+        public float HitpointsCurrent { get; internal set; }
+        public float HitpointsMax { get; internal set; }
 
         public Monster(int snoID, int monsterCategory, int race, int type, int powerType, 
             int resists)
@@ -93,10 +93,10 @@ namespace libdiablo3.Api
             Resists = (Resistance)resists;
         }
 
-        internal Monster CreateInstance(int instanceID, AABB aabb, Vector2f direction, 
-            int level, int xpGranted, int hpCur, int hpMax)
+        internal static Monster CreateInstance(Monster template, int instanceID, AABB aabb,
+            Vector2f direction, int level, int xpGranted, float hpCur, float hpMax)
         {
-            Monster monster = this.MemberwiseClone() as Monster;
+            Monster monster = template.MemberwiseClone() as Monster;
             monster.InstanceID = instanceID;
             monster.BoundingBox = aabb;
             monster.Direction = direction;

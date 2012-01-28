@@ -9,16 +9,16 @@ namespace libdiablo3.Api
     {
         public readonly GizmoGroup GizmoType;
 
-        public Gizmo(int snoID, int gizmoGroup, int teamID)
+        internal Gizmo(int snoID, int gizmoGroup, int teamID)
             : base(snoID, (int)ActorCategory.Gizmo, teamID)
         {
             GizmoType = (GizmoGroup)gizmoGroup;
         }
 
-        internal Gizmo CreateInstance(int instanceID, AABB aabb, Vector2f direction,
-            int gizmoGroup)
+        internal static Gizmo CreateInstance(Gizmo template, int instanceID, AABB aabb,
+            Vector2f direction)
         {
-            Gizmo gizmo = this.MemberwiseClone() as Gizmo;
+            Gizmo gizmo = template.MemberwiseClone() as Gizmo;
             gizmo.InstanceID = instanceID;
             gizmo.BoundingBox = aabb;
             gizmo.Direction = direction;

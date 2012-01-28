@@ -52,6 +52,8 @@ namespace libdiablo3
         private static Vector3f left = new Vector3f(-1f, 0f, 0f);
         private static Vector3f forward = new Vector3f(0f, 0f, -1f);
         private static Vector3f backward = new Vector3f(0f, 0f, 1f);
+        private static Vector3f minValue = new Vector3f(Single.MinValue, Single.MinValue, Single.MinValue);
+        private static Vector3f maxValue = new Vector3f(Single.MaxValue, Single.MaxValue, Single.MaxValue);
 
         #endregion Private Fields
 
@@ -120,6 +122,16 @@ namespace libdiablo3
         public static Vector3f Backward
         {
             get { return backward; }
+        }
+
+        public static Vector3f MinValue
+        {
+            get { return minValue; }
+        }
+
+        public static Vector3f MaxValue
+        {
+            get { return maxValue; }
         }
 
         #endregion Properties
