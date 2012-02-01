@@ -10,6 +10,8 @@ namespace libdiablo3
         public Vector3f Min;
         public Vector3f Max;
 
+        public static readonly AABB Zero = new AABB();
+
         public AABB(Vector3f min, Vector3f max)
         {
             Min = min;

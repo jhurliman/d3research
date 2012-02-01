@@ -11,7 +11,7 @@ namespace libdiablo3.Process
         /// <summary>Pointer to the actor in memory</summary>
         public uint Pointer;
         /// <summary>Unique lookup ID for this actor</summary>
-        public uint ActorID;
+        public int ActorID;
         /// <summary>Unique lookup ID for this actor's ActorCommonData</summary>
         public uint AcdID;
         /// <summary>3D model name</summary>
@@ -38,7 +38,7 @@ namespace libdiablo3.Process
         public D3Actor(MemoryReader memReader, uint ptr, byte[] data)
         {
             this.Pointer = ptr;
-            this.ActorID = BitConverter.ToUInt32(data, 0);
+            this.ActorID = BitConverter.ToInt32(data, 0);
             this.AcdID = BitConverter.ToUInt32(data, 4);
             this.ModelName = ProcessUtils.AsciiBytesToString(data, 8, 128);
             this.SnoID = BitConverter.ToInt32(data, 136);
@@ -63,7 +63,10 @@ namespace libdiablo3.Process
                 this.MovementInfo = new D3MovementInfo(movementPtr, memReader.D3.ReadBytes(movementPtr, Offsets.SIZEOF_MOVEMENTINFO));
 
             // Attributes
-            Attributes = memReader.GetActorAttributes(this);
+            if (this.Acd != null)
+                Attributes = memReader.GetAttributes(this.Acd.AttributesPtr);
+            else
+                Attributes = new Dictionary<D3Attribute, D3AttributeValue>(0);
         }
     }
 }

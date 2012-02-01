@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace libdiablo3
+namespace libdiablo3.Process
 {
     public partial class D3Attribute
     {

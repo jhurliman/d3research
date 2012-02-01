@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace libdiablo3
+namespace libdiablo3.Process
 {
     public enum D3AttributeEncoding
     {

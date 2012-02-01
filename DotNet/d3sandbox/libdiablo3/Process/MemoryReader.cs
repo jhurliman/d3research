@@ -81,7 +81,7 @@ namespace libdiablo3.Process
             return actors != 0;
         }
 
-        public bool Init()
+        public bool UpdatePointers()
         {
             try
             {
@@ -145,26 +145,48 @@ namespace libdiablo3.Process
         /// <summary>
         /// Fetch all scene entities
         /// </summary>
-        public List<D3Actor> GetActors()
+        public Dictionary<int, D3Actor> GetActors()
         {
             // Grab the size of the RActors array
-            int actorArraySize = D3.ReadInt(pRActors + Offsets.ARRAY_SIZE_OFFSET);
-            if (actorArraySize == 0)
-                return new List<D3Actor>(0);
+            int arraySize = D3.ReadInt(pRActors + Offsets.ARRAY_SIZE_OFFSET);
+            if (arraySize == 0)
+                return new Dictionary<int,D3Actor>(0);
 
             // Grab the first actor
             uint pRActor = D3.ReadUInt(D3.ReadUInt(pRActors + Offsets.ARRAY_START_PTR_OFFSET));
 
             // Loop through the array and grab all valid actor objects
-            List<D3Actor> actors = new List<D3Actor>(actorArraySize);
-            for (uint i = 0; i < actorArraySize; i++)
+            Dictionary<int, D3Actor> actors = new Dictionary<int,D3Actor>(arraySize);
+            for (uint i = 0; i < arraySize; i++)
             {
                 D3Actor actor = GetActor(pRActor + i * Offsets.SIZEOF_RACTOR);
                 if (actor != null)
-                    actors.Add(actor);
+                    actors.Add(actor.ActorID, actor);
             }
 
             return actors;
+        }
+
+        public Dictionary<int, D3ActorCommonData> GetACDs()
+        {
+            // Grab the size of the ActorCommonData array
+            int arraySize = D3.ReadInt(pACDs + Offsets.ARRAY_SIZE_OFFSET);
+            if (arraySize == 0)
+                return new Dictionary<int, D3ActorCommonData>(0);
+
+            // Grab the first actor
+            uint pACD = D3.ReadUInt(D3.ReadUInt(pACDs + Offsets.ARRAY_START_PTR_OFFSET));
+
+            // Loop through the array and grab all valid ACD objects
+            Dictionary<int, D3ActorCommonData> acds = new Dictionary<int, D3ActorCommonData>(arraySize);
+            for (uint i = 0; i < arraySize; i++)
+            {
+                D3ActorCommonData acd = GetACD(pACD + i * Offsets.SIZEOF_ACD);
+                if (acd != null)
+                    acds.Add(acd.AcdID, acd);
+            }
+
+            return acds;
         }
 
         public List<D3Scene> GetScenes()
@@ -187,14 +209,11 @@ namespace libdiablo3.Process
             return scenes;
         }
 
-        public D3AttributeValue? GetAttribute(D3Actor actor, D3Attribute attrib)
+        public D3AttributeValue? GetAttribute(uint attributesPtr, D3Attribute attrib)
         {
-            if (actor.Acd == null)
-                return null;
-
             uint ptr;
             uint attribID = Offsets.ATTRIBUTE_MASK | (uint)attrib.ID;
-            uint v0 = D3.ReadUInt(actor.Acd.AttributesPtr + 16);
+            uint v0 = D3.ReadUInt(attributesPtr + 16);
 
             ptr = D3.ReadUInt(D3.ReadUInt(v0 + 8) + 4 * (D3.ReadUInt(v0 + Offsets.ARRAY_SLOTCOUNT_OFFSET) & (attribID ^ (attribID >> 16))));
             if (ptr != 0)
@@ -215,14 +234,12 @@ namespace libdiablo3.Process
         /// <summary>
         /// Fetch all attributes associated with a given actor
         /// </summary>
-        /// <param name="actor">Actor to fetch attributes for</param>
-        public Dictionary<D3Attribute, D3AttributeValue> GetActorAttributes(D3Actor actor)
+        /// <param name="attributesPtr">Pointer to an attributes container</param>
+        public Dictionary<D3Attribute, D3AttributeValue> GetAttributes(uint attributesPtr)
         {
             Dictionary<D3Attribute, D3AttributeValue> attributes = new Dictionary<D3Attribute, D3AttributeValue>();
-            if (actor.Acd == null)
-                return attributes;
-
-            uint v0 = D3.ReadUInt(actor.Acd.AttributesPtr + 16);
+            
+            uint v0 = D3.ReadUInt(attributesPtr + 16);
             uint capacity = D3.ReadUInt(v0 + Offsets.ARRAY_SLOTCOUNT_OFFSET);
 
             uint basePtr;
@@ -257,7 +274,9 @@ namespace libdiablo3.Process
             for (var i = 0; i < D3Attribute.Attributes.Length; i++)
             {
                 D3Attribute attribute = D3Attribute.Attributes[i];
-                D3AttributeValue? value = GetAttribute(actor, attribute);
+                if (actor.Acd == null)
+                    continue;
+                D3AttributeValue? value = GetAttribute(actor.Acd.AttributesPtr, attribute);
                 if (value.HasValue)
                     attributes.Add(attribute, value.Value);
             }
@@ -435,6 +454,17 @@ namespace libdiablo3.Process
         {
             if (D3.ReadUInt(ptr) != Offsets.INVALID)
                 return new D3Actor(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_RACTOR));
+            return null;
+        }
+
+        /// <summary>
+        /// Read an ActorCommonData object
+        /// </summary>
+        /// <param name="ptr">Pointer to the ActorCommonData to read</param>
+        public D3ActorCommonData GetACD(uint ptr)
+        {
+            if (D3.ReadUInt(ptr) != Offsets.INVALID)
+                return new D3ActorCommonData(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_ACD));
             return null;
         }
 

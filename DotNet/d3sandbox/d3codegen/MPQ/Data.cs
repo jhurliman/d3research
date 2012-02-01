@@ -42,9 +42,8 @@ namespace Mooege.Common.MPQ
         // Only load a subset of all the SNO files
         private static readonly HashSet<SNOGroup> LoadGroups = new HashSet<SNOGroup>
         {
-            SNOGroup.Actor, SNOGroup.EffectGroup, SNOGroup.FlagSet,
-            SNOGroup.Globals, SNOGroup.Hero, SNOGroup.MarkerSet, SNOGroup.Monster, 
-            SNOGroup.Power, SNOGroup.Scene, SNOGroup.SceneGroup, SNOGroup.Script
+            SNOGroup.Actor, SNOGroup.GameBalance, SNOGroup.Monster, 
+            SNOGroup.Power, SNOGroup.Scene, SNOGroup.SceneGroup
         };
 
         public Data()
@@ -112,7 +111,11 @@ namespace Mooege.Common.MPQ
                 asset.MpqFile = this.GetFile(asset.FileName, PatchExceptions.Contains(asset.Group)); // get the file. note: if file is in any of the groups in PatchExceptions it'll from load the original version - the reason is that assets in those groups got patched to 0 bytes. /raist.
                 if (asset.MpqFile == null)
                     continue;
-                
+
+                // HACK: Quick workaround
+                if (snoId == 19740)
+                    continue;
+
                 this.ProcessAsset(asset); // process the asset.
 
                 if (++count % 1000 == 0)

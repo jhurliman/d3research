@@ -36,13 +36,21 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\AIState.cs" />
+    <Compile Include="AI\AITask.cs" />
+    <Compile Include="AI\AITaskQueue.cs" />
     <Compile Include="Api\Actor.cs" />
     <Compile Include="Api\ActorCategory.cs" />
     <Compile Include="Api\ActorName.cs" />
     <Compile Include="Api\ActorTemplates.cs" />
     <Compile Include="Api\Buff.cs" />
     <Compile Include="Api\Diablo3Api.cs" />
+    <Compile Include="Api\Inventory.cs" />
     <Compile Include="Api\Item.cs" />
+    <Compile Include="Api\ItemDefinitions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Api\ItemTypes.cs" />
     <Compile Include="Api\NavCell.cs" />
     <Compile Include="Api\NPC.cs" />
     <Compile Include="Api\Player.cs" />
@@ -74,6 +82,7 @@
     <Compile Include="Api\Skill.cs" />
     <Compile Include="Api\SkillSlots.cs" />
     <Compile Include="Types\AABB.cs" />
+    <Compile Include="Types\Vector2i.cs" />
     <Compile Include="Types\MathHelper.cs" />
     <Compile Include="Types\Matrix4f.cs" />
     <Compile Include="Types\Quaternion.cs" />

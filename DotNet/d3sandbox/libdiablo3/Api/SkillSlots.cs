@@ -7,7 +7,7 @@ namespace libdiablo3.Api
 {
     public class SkillSlots
     {
-        private Skill walk = new Skill(PowerName.Walk);
+        private Skill walk = new Skill(PowerName.Walk, 0f);
         private Skill[] slots = new Skill[9];
         
         public Skill Walk { get { return walk; } }
@@ -36,9 +36,11 @@ namespace libdiablo3.Api
             return false;
         }
 
-        internal void UpdateSkills()
+        internal void UpdateSkills(uint[] slots)
         {
             // FIXME: Need to pass in an array of structs that hold powerIDs and cooldown times
+            for (int i = 0; i < slots.Length; i++)
+                this.slots[i] = new Skill((PowerName)slots[i], 0f);
         }
     }
 }

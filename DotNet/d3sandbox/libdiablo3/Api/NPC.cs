@@ -11,6 +11,7 @@ namespace libdiablo3.Api
         public int Level { get; internal set; }
         public float HitpointsCurrent { get; internal set; }
         public float HitpointsMax { get; internal set; }
+        public Inventory Inventory { get; internal set; }
 
         internal NPC(int snoID, int category, int teamID)
             : base(snoID, category, teamID)

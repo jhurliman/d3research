@@ -50,6 +50,89 @@ namespace d3codegen
 
             #endregion Scenes
 
+            #region Item Types
+
+            Dictionary<int, ItemTable> items = new Dictionary<int, ItemTable>();
+            Dictionary<int, ItemTypeTable> itemTypes = new Dictionary<int, ItemTypeTable>();
+
+            foreach (Asset asset in MPQStorage.Data.Assets[SNOGroup.GameBalance].Values)
+            {
+                GameBalance gb = asset.Data as GameBalance;
+                foreach (ItemTable item in gb.Item)
+                    items.Add(item.Hash, item);
+                foreach (ItemTypeTable itemType in gb.ItemType)
+                    itemTypes.Add(itemType.Hash, itemType);
+            }
+
+            using (StreamWriter itemWriter = new StreamWriter("ItemDefinitions.cs"))
+            {
+                itemWriter.WriteLine("using System;");
+                itemWriter.WriteLine("using System.Collections.Generic;");
+                itemWriter.WriteLine();
+                itemWriter.WriteLine("namespace libdiablo3.Api");
+                itemWriter.WriteLine("{");
+                itemWriter.WriteLine("    public static class ItemDefinitions");
+                itemWriter.WriteLine("    {");
+                itemWriter.WriteLine("        public static readonly Dictionary<int, int> Definitions = new Dictionary<int, int>");
+                itemWriter.WriteLine("        {");
+
+                foreach (KeyValuePair<int, ItemTable> kvp in items)
+                {
+                    ItemTable item = kvp.Value;
+                    //itemWriter.WriteLine("            {{ {0}, new ItemDefinition({1}, {2}) }},",
+                    //    kvp.Key, item.Hash, item.ItemType1);
+                    itemWriter.WriteLine("            {{ {0}, {1} }},", kvp.Key, item.ItemType1);
+                }
+
+                itemWriter.WriteLine("        };");
+                itemWriter.WriteLine("        ");
+                itemWriter.WriteLine("        public static readonly Dictionary<int, int> SnoToDefinitions = new Dictionary<int, int>");
+                itemWriter.WriteLine("        {");
+
+                HashSet<int> snos = new HashSet<int>();
+                foreach (KeyValuePair<int, ItemTable> kvp in items)
+                {
+                    ItemTable item = kvp.Value;
+                    if (item.SNOActor != -1 && !snos.Contains(item.SNOActor))
+                    {
+                        snos.Add(item.SNOActor);
+                        itemWriter.WriteLine("            {{ {0}, {1} }},", item.SNOActor, item.ItemType1);
+                    }
+                }
+
+                itemWriter.WriteLine("        };");
+                itemWriter.WriteLine("    }");
+                itemWriter.WriteLine("}");
+                itemWriter.WriteLine();
+            }
+
+            using (StreamWriter itemWriter = new StreamWriter("ItemTypes.cs"))
+            {
+                itemWriter.WriteLine("using System;");
+                itemWriter.WriteLine("using System.Collections.Generic;");
+                itemWriter.WriteLine();
+                itemWriter.WriteLine("namespace libdiablo3.Api");
+                itemWriter.WriteLine("{");
+                itemWriter.WriteLine("    public static class ItemTypes");
+                itemWriter.WriteLine("    {");
+                itemWriter.WriteLine("        public static readonly Dictionary<int, ItemType> Types = new Dictionary<int, ItemType>");
+                itemWriter.WriteLine("        {");
+
+                foreach (KeyValuePair<int, ItemTypeTable> kvp in itemTypes)
+                {
+                    ItemTypeTable type = kvp.Value;
+                    itemWriter.WriteLine("            {{ {0}, new ItemType(\"{1}\", {2}, {3}, {4}) }},",
+                        kvp.Key, type.Name, type.Hash, type.ParentType, (int)type.Flags);
+                }
+
+                itemWriter.WriteLine("        };");
+                itemWriter.WriteLine("    }");
+                itemWriter.WriteLine("}");
+                itemWriter.WriteLine();
+            }
+
+            #endregion Item Types
+
             using (StreamWriter enumWriter = new StreamWriter("ActorName.cs"))
             {
                 enumWriter.WriteLine("using System;");

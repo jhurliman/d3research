@@ -8,10 +8,12 @@ namespace libdiablo3.Api
     public class Skill : IEquatable<Skill>
     {
         public readonly PowerName Power;
+        public float CooldownRemaining;
 
-        public Skill(PowerName power)
+        public Skill(PowerName power, float cooldown)
         {
             Power = power;
+            CooldownRemaining = cooldown;
         }
 
         public override int GetHashCode()
