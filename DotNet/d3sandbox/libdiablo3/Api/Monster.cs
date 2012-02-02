@@ -93,11 +93,12 @@ namespace libdiablo3.Api
             Resists = (Resistance)resists;
         }
 
-        internal static Monster CreateInstance(Monster template, int instanceID, AABB aabb,
-            Vector2f direction, int level, int xpGranted, float hpCur, float hpMax)
+        internal static Monster CreateInstance(Monster template, int instanceID, int acdID,
+            AABB aabb, Vector2f direction, int level, int xpGranted, float hpCur, float hpMax)
         {
             Monster monster = template.MemberwiseClone() as Monster;
             monster.InstanceID = instanceID;
+            monster.AcdID = acdID;
             monster.BoundingBox = aabb;
             monster.Direction = direction;
             monster.Level = level;

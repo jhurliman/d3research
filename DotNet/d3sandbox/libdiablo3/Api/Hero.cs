@@ -39,11 +39,12 @@ namespace libdiablo3.Api
             }
         }
 
-        internal static Hero CreateInstance(Hero template, int instanceID, AABB aabb,
+        internal static Hero CreateInstance(Hero template, int instanceID, int acdID, AABB aabb,
             Vector2f direction)
         {
             Hero hero = template.MemberwiseClone() as Hero;
             hero.InstanceID = instanceID;
+            hero.AcdID = acdID;
             hero.BoundingBox = aabb;
             hero.Direction = direction;
             return hero;

@@ -18,11 +18,12 @@ namespace libdiablo3.Api
         {
         }
 
-        internal static NPC CreateInstance(NPC template, int instanceID, AABB aabb,
+        internal static NPC CreateInstance(NPC template, int instanceID, int acdID, AABB aabb,
             Vector2f direction, bool isOperatable, int level, float hpCur, float hpMax)
         {
             NPC npc = template.MemberwiseClone() as NPC;
             npc.InstanceID = instanceID;
+            npc.AcdID = acdID;
             npc.BoundingBox = aabb;
             npc.Direction = direction;
             npc.IsOperatable = isOperatable;

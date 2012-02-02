@@ -100,5 +100,16 @@ namespace libdiablo3.Api
             SkillSlots = new SkillSlots();
             Outfit = new PlayerOutfit();
         }
+
+        internal static Player CreateInstance(int snoID, int instanceID, int acdID, AABB aabb,
+            Vector2f direction)
+        {
+            Player player = new Player(snoID);
+            player.InstanceID = instanceID;
+            player.AcdID = acdID;
+            player.BoundingBox = aabb;
+            player.Direction = direction;
+            return player;
+        }
     }
 }

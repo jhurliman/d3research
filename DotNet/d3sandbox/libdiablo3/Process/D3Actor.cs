@@ -68,5 +68,10 @@ namespace libdiablo3.Process
             else
                 Attributes = new Dictionary<D3Attribute, D3AttributeValue>(0);
         }
+
+        public override string ToString()
+        {
+            return ModelName;
+        }
     }
 }

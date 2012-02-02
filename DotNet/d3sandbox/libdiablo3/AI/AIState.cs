@@ -8,6 +8,7 @@ namespace libdiablo3.AI
         Hunting,
         Combat,
         Retreat,
-        Selling
+        VendorSelling,
+        AuctionSelling
     }
 }

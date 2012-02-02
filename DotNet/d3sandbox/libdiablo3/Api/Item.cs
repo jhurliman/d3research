@@ -117,12 +117,13 @@ namespace libdiablo3.Api
         {
         }
 
-        internal static Item CreateInstance(Item template, int instanceID, AABB aabb,
+        internal static Item CreateInstance(Item template, int instanceID, int acdID, AABB aabb,
             Vector2f direction, ItemType type, int placement, int inventoryX, int inventoryY)
         {
             Item item = template.MemberwiseClone() as Item;
             item.type = type;
             item.InstanceID = instanceID;
+            item.AcdID = acdID;
             item.BoundingBox = aabb;
             item.Direction = direction;
             item.Placement = (ItemPlacement)placement;

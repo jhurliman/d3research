@@ -60,6 +60,7 @@
     <Compile Include="Api\GizmoGroup.cs" />
     <Compile Include="Api\Hero.cs" />
     <Compile Include="Api\Monster.cs" />
+    <Compile Include="Api\PowerInfo.cs" />
     <Compile Include="Api\PowerName.cs" />
     <Compile Include="Api\Scene.cs" />
     <Compile Include="Api\NavCells.cs" />

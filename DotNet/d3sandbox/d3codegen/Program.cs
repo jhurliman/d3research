@@ -79,25 +79,7 @@ namespace d3codegen
                 foreach (KeyValuePair<int, ItemTable> kvp in items)
                 {
                     ItemTable item = kvp.Value;
-                    //itemWriter.WriteLine("            {{ {0}, new ItemDefinition({1}, {2}) }},",
-                    //    kvp.Key, item.Hash, item.ItemType1);
                     itemWriter.WriteLine("            {{ {0}, {1} }},", kvp.Key, item.ItemType1);
-                }
-
-                itemWriter.WriteLine("        };");
-                itemWriter.WriteLine("        ");
-                itemWriter.WriteLine("        public static readonly Dictionary<int, int> SnoToDefinitions = new Dictionary<int, int>");
-                itemWriter.WriteLine("        {");
-
-                HashSet<int> snos = new HashSet<int>();
-                foreach (KeyValuePair<int, ItemTable> kvp in items)
-                {
-                    ItemTable item = kvp.Value;
-                    if (item.SNOActor != -1 && !snos.Contains(item.SNOActor))
-                    {
-                        snos.Add(item.SNOActor);
-                        itemWriter.WriteLine("            {{ {0}, {1} }},", item.SNOActor, item.ItemType1);
-                    }
                 }
 
                 itemWriter.WriteLine("        };");

@@ -11,6 +11,7 @@ namespace libdiablo3.Api
         public readonly ActorCategory Category;
         public readonly TeamType Team;
         public int InstanceID;
+        public int AcdID;
         public AABB BoundingBox;
         public Vector2f Direction;
 
@@ -46,11 +47,12 @@ namespace libdiablo3.Api
             return Type.ToString();
         }
 
-        internal static Actor CreateInstance(Actor template, int instanceID, AABB aabb,
+        internal static Actor CreateInstance(Actor template, int instanceID, int acdID, AABB aabb,
             Vector2f direction)
         {
             Actor actor = template.MemberwiseClone() as Actor;
             actor.InstanceID = instanceID;
+            actor.AcdID = acdID;
             actor.BoundingBox = aabb;
             actor.Direction = direction;
             return actor;

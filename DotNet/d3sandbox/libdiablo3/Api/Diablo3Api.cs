@@ -182,28 +182,36 @@ namespace libdiablo3.Api
                 AABB aabb = new AABB(d3Actor.Pos1, d3Actor.Pos2);
                 Vector2f direction = d3Actor.Direction;
                 int instanceID = (int)d3Actor.ActorID;
+                int acdID = (int)d3Actor.AcdID;
 
                 D3AttributeValue teamID;
                 d3Actor.Attributes.TryGetValue(D3Attribute.TeamID, out teamID);
 
                 if (templateActor is Gizmo)
                 {
-                    Gizmo gizmo = Gizmo.CreateInstance((Gizmo)templateActor, instanceID, aabb, direction);
+                    Gizmo gizmo = Gizmo.CreateInstance((Gizmo)templateActor, instanceID, acdID, aabb, direction);
                     gizmos.Add(gizmo);
                 }
                 else if (templateActor is Hero)
                 {
-                    Hero hero = Hero.CreateInstance((Hero)templateActor, instanceID, aabb, direction);
+                    Hero hero = Hero.CreateInstance((Hero)templateActor, instanceID, acdID, aabb, direction);
                     heros.Add(hero);
                 }
                 else if (templateActor is Item)
                 {
-                    int itemTypeHash;
-                    if (!ItemDefinitions.SnoToDefinitions.TryGetValue(d3Actor.SnoID, out itemTypeHash))
+                    if (d3Actor.Acd == null)
+                    {
+                        // TODO: These appear to be the in-world representation
+                        // of weapons+armor attachments
                         continue;
+                    }
+
+                    int itemTypeHash;
+                    if (!ItemDefinitions.Definitions.TryGetValue((int)d3Actor.Acd.GBID, out itemTypeHash))
+                        throw new MemoryReadException("Unrecognized GBID", d3Actor.Acd.GBID);
 
                     ItemType type = ItemTypes.Types[itemTypeHash];
-                    Item item = Item.CreateInstance((Item)templateActor, instanceID, aabb, direction, type, -1, 0, 0);
+                    Item item = Item.CreateInstance((Item)templateActor, instanceID, acdID, aabb, direction, type, -1, 0, 0);
                     items.Add(item);
                 }
                 else if (templateActor is Monster)
@@ -216,7 +224,7 @@ namespace libdiablo3.Api
                     float hpCur = d3Actor.Attributes[D3Attribute.Hitpoints_Cur].ValueF;
                     float hpMax = d3Actor.Attributes[D3Attribute.Hitpoints_Max].Value;
 
-                    Monster monster = Monster.CreateInstance((Monster)templateActor, instanceID, aabb, direction, level,
+                    Monster monster = Monster.CreateInstance((Monster)templateActor, instanceID, acdID, aabb, direction, level,
                         xpGranted, hpCur, hpMax);
                     monsters.Add(monster);
                 }
@@ -230,13 +238,13 @@ namespace libdiablo3.Api
                     int hpCur = 0;
                     int hpMax = 0;
 
-                    NPC npc = NPC.CreateInstance((NPC)templateActor, instanceID, aabb, direction, isOperatable,
+                    NPC npc = NPC.CreateInstance((NPC)templateActor, instanceID, acdID, aabb, direction, isOperatable,
                         level, hpCur, hpMax);
                     npcs.Add(npc.InstanceID, npc);
                 }
                 else
                 {
-                    Actor actor = Actor.CreateInstance(templateActor, instanceID, aabb, direction);
+                    Actor actor = Actor.CreateInstance(templateActor, instanceID, acdID, aabb, direction);
                     actors.Add(actor);
                 }
             }
@@ -248,7 +256,9 @@ namespace libdiablo3.Api
             D3Actor d3Player = memReader.GetPlayer();
             if (d3Player != null)
             {
-                world.Me = new Player(d3Player.SnoID);
+                world.Me = Player.CreateInstance(
+                    d3Player.SnoID, (int)d3Player.ActorID, (int)d3Player.AcdID,
+                    new AABB(d3Player.Pos1, d3Player.Pos2), d3Player.Direction);
                 world.Me.Backpack = new Backpack(d3Player.Attributes[D3Attribute.Backpack_Slots].Value);
                 world.Me.Stash = new Stash(d3Player.Attributes[D3Attribute.Shared_Stash_Slots].Value);
                 world.Me.SkillSlots.UpdateSkills(memReader.GetActiveSkills());
@@ -345,7 +355,7 @@ namespace libdiablo3.Api
         {
             Actor templateActor = ActorTemplates.Actors[d3ACD.SnoID];
             ItemType type = ItemTypes.Types[ItemDefinitions.Definitions[(int)d3ACD.GBID]];
-            Item item = Item.CreateInstance((Item)templateActor, -1, AABB.Zero,
+            Item item = Item.CreateInstance((Item)templateActor, -1, d3ACD.AcdID, AABB.Zero,
                 Vector2f.Zero, type, d3ACD.Placement, d3ACD.InventoryX,
                 d3ACD.InventoryY);
             item.InstanceID = d3ACD.AcdID;

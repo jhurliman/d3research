@@ -33,5 +33,10 @@ namespace libdiablo3.Api
                 return Equals(skill);
             return false;
         }
+
+        public override string ToString()
+        {
+            return Power.ToString();
+        }
     }
 }
