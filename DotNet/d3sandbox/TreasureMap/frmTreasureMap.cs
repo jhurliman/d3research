@@ -122,6 +122,9 @@ namespace TreasureMap
 
         private void DrawShapes(Graphics graphics)
         {
+            if (world.Scenes == null)
+                return;
+
             foreach (Scene scene in world.Scenes)
                 DrawScene(graphics, scene);
 
@@ -158,6 +161,8 @@ namespace TreasureMap
                         break;
                 }
             }
+            if (world.Me != null)
+                DrawActor(world.Me, graphics, Brushes.White, 10);
             foreach (Hero hero in world.Heros)
             {
                 AABB aabb = hero.BoundingBox;
