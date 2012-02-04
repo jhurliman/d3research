@@ -29,7 +29,7 @@ namespace libdiablo3.Process
         }
     }
 
-    public partial class D3Attribute
+    public partial class D3Attribute : IEquatable<D3Attribute>
     {
         public const float Float16Min = -65536.0f;
         public const float Float16Max = 65536.0f;
@@ -96,6 +96,18 @@ namespace libdiablo3.Process
         public virtual string ValueToString(D3AttributeValue value)
         {
             return "[Invalid]";
+        }
+
+        public bool Equals(D3Attribute attribute)
+        {
+            return this.ID == attribute.ID;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is D3Attribute)
+                return Equals((D3Attribute)obj);
+            return false;
         }
 
         public override int GetHashCode()

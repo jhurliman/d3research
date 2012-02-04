@@ -18,8 +18,8 @@ namespace libdiablo3
             Max = max;
         }
 
-        public float Width { get { return Max.X - Min.X; } }
-        public float Height { get { return Max.Y - Min.Y; } }
+        public float Width { get { return Math.Abs(Max.X - Min.X); } }
+        public float Height { get { return Math.Abs(Max.Y - Min.Y); } }
         public Vector3f Center { get { return (Min + Max) * 0.5f; } }
 
         public bool IsWithin(Vector3f v)

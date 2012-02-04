@@ -33,7 +33,6 @@ namespace libdiablo3.Process
 
         public D3ActorCommonData Acd;
         public D3MovementInfo MovementInfo;
-        public Dictionary<D3Attribute, D3AttributeValue> Attributes;
 
         public D3Actor(MemoryReader memReader, uint ptr, byte[] data)
         {
@@ -61,12 +60,6 @@ namespace libdiablo3.Process
             uint movementPtr = BitConverter.ToUInt32(data, 896);
             if (movementPtr != 0 && movementPtr != Offsets.INVALID)
                 this.MovementInfo = new D3MovementInfo(movementPtr, memReader.D3.ReadBytes(movementPtr, Offsets.SIZEOF_MOVEMENTINFO));
-
-            // Attributes
-            if (this.Acd != null)
-                Attributes = memReader.GetAttributes(this.Acd.AttributesPtr);
-            else
-                Attributes = new Dictionary<D3Attribute, D3AttributeValue>(0);
         }
 
         public override string ToString()

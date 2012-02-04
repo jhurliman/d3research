@@ -5,7 +5,9 @@ using System.Text;
 
 namespace libdiablo3.Api
 {
-    public enum HeroType
+    #region Enums
+
+    public enum HeroType : int
     {
         Unknown = 0,
         Barbarian,
@@ -14,6 +16,28 @@ namespace libdiablo3.Api
         WitchDoctor,
         Wizard
     }
+
+    public enum ResourceType : int
+    {
+        None = -1,
+        Mana,
+        Arcanum,
+        Fury,
+        Spirit,
+        Power,
+        Hatred,
+        Discipline
+    }
+
+    public enum AttributeType : int
+    {
+        None = -1,
+        Strength,
+        Dexterity,
+        Intelligence,
+    }
+
+    #endregion Enums
 
     public class Hero : Actor
     {

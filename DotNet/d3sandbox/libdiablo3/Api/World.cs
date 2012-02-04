@@ -51,6 +51,12 @@ namespace libdiablo3.Api
 
             public IEnumerator<Actor> GetEnumerator()
             {
+                if (world.Me != null)
+                    yield return world.Me;
+
+                if (world.Heros == null)
+                    yield break;
+
                 foreach (Hero hero in world.Heros)
                     yield return hero;
                 foreach (Monster monster in world.Monsters)

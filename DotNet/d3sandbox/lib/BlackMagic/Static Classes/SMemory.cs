@@ -58,19 +58,11 @@ namespace Magic
 		public static byte[] ReadBytes(IntPtr hProcess, uint dwAddress, int nSize)
 		{
 			IntPtr lpBuffer = IntPtr.Zero;
-			int iBytesRead;
-			byte[] baRet;
 
 			try
 			{
 				lpBuffer = Marshal.AllocHGlobal(nSize);
-
-				iBytesRead = ReadRawMemory(hProcess, dwAddress, lpBuffer, nSize);
-				if (iBytesRead != nSize)
-					throw new Exception("ReadProcessMemory error in ReadBytes");
-
-				baRet = new byte[iBytesRead];
-				Marshal.Copy(lpBuffer, baRet, 0, iBytesRead);
+                return ReadBytes(hProcess, dwAddress, nSize, lpBuffer);
 			}
 			catch
 			{
@@ -81,9 +73,29 @@ namespace Magic
 				if (lpBuffer != IntPtr.Zero)
 					Marshal.FreeHGlobal(lpBuffer);
 			}
-
-			return baRet;
 		}
+
+        public static byte[] ReadBytes(IntPtr hProcess, uint dwAddress, int nSize, IntPtr lpBuffer)
+        {
+            int iBytesRead;
+            byte[] baRet;
+
+            try
+            {
+                iBytesRead = ReadRawMemory(hProcess, dwAddress, lpBuffer, nSize);
+                if (iBytesRead != nSize)
+                    throw new Exception("ReadProcessMemory error in ReadBytes");
+
+                baRet = new byte[iBytesRead];
+                Marshal.Copy(lpBuffer, baRet, 0, iBytesRead);
+            }
+            catch
+            {
+                return null;
+            }
+
+            return baRet;
+        }
 
 		/// <summary>
 		/// Reads a structure/object from an external process' memory.
@@ -232,6 +244,18 @@ namespace Magic
 			return BitConverter.ToUInt32(buf, 0);
 		}
 
+        public static uint ReadUInt(IntPtr hProcess, uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            byte[] buf = ReadBytes(hProcess, dwAddress, sizeof(uint), lpBuffer);
+            if (buf == null)
+                throw new Exception("ReadUInt failed.");
+
+            if (bReverse)
+                Array.Reverse(buf);
+
+            return BitConverter.ToUInt32(buf, 0);
+        }
+
 		/// <summary>
 		/// Reads an unsigned integer from memory.
 		/// </summary>
@@ -261,6 +285,18 @@ namespace Magic
 
 			return BitConverter.ToInt32(buf, 0);
 		}
+
+        public static int ReadInt(IntPtr hProcess, uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            byte[] buf = ReadBytes(hProcess, dwAddress, sizeof(int), lpBuffer);
+            if (buf == null)
+                throw new Exception("ReadInt failed.");
+
+            if (bReverse)
+                Array.Reverse(buf);
+
+            return BitConverter.ToInt32(buf, 0);
+        }
 
 		/// <summary>
 		/// Reads a signed integer from memory.
@@ -351,6 +387,18 @@ namespace Magic
 
 			return BitConverter.ToSingle(buf, 0);
 		}
+
+        public static float ReadFloat(IntPtr hProcess, uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            byte[] buf = ReadBytes(hProcess, dwAddress, sizeof(float), lpBuffer);
+            if (buf == null)
+                throw new Exception("ReadFloat failed.");
+
+            if (bReverse)
+                Array.Reverse(buf);
+
+            return BitConverter.ToSingle(buf, 0);
+        }
 
 		/// <summary>
 		/// Reads a single-precision float from memory.

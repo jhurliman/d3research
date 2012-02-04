@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,6 +46,7 @@
     <Compile Include="Api\ActorTemplates.cs" />
     <Compile Include="Api\Buff.cs" />
     <Compile Include="Api\Diablo3Api.cs" />
+    <Compile Include="Api\Experience.cs" />
     <Compile Include="Api\Inventory.cs" />
     <Compile Include="Api\Item.cs" />
     <Compile Include="Api\ItemDefinitions.cs">
@@ -69,6 +71,7 @@
     <Compile Include="Log.cs" />
     <Compile Include="Process\D3Actor.cs" />
     <Compile Include="Process\D3ActorCommonData.cs" />
+    <Compile Include="Process\D3AttributeMap.cs" />
     <Compile Include="Process\D3MovementInfo.cs" />
     <Compile Include="Process\D3PowerInfo.cs" />
     <Compile Include="Process\D3Scene.cs" />

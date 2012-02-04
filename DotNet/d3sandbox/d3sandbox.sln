@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d3sandbox", "d3sandbox\d3sandbox.csproj", "{7A094D2A-4441-4A57-844B-7CC459D510CF}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fasmdll_managed", "lib\fasmdll_managed\fasmdll_managed.vcxproj", "{61D8CF34-1FD7-4A01-BEC1-1A8E8050A9C6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackMagic", "lib\BlackMagic\BlackMagic.csproj", "{79FD54B0-DEAB-459F-83B9-F1CED68D288B}"
@@ -13,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libdiablo3", "libdiablo3\li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d3codegen", "d3codegen\d3codegen.csproj", "{D5F43257-430E-4615-BE9C-83B5D5569E92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TreasureMap", "TreasureMap\TreasureMap.csproj", "{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "D3Overseer", "D3Overseer\D3Overseer.csproj", "{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,16 +23,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Debug|x86.ActiveCfg = Debug|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Debug|x86.Build.0 = Debug|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Release|Any CPU.ActiveCfg = Release|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Release|Mixed Platforms.Build.0 = Release|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Release|x86.ActiveCfg = Release|x86
-		{7A094D2A-4441-4A57-844B-7CC459D510CF}.Release|x86.Build.0 = Release|x86
 		{61D8CF34-1FD7-4A01-BEC1-1A8E8050A9C6}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{61D8CF34-1FD7-4A01-BEC1-1A8E8050A9C6}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{61D8CF34-1FD7-4A01-BEC1-1A8E8050A9C6}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -87,16 +75,16 @@ Global
 		{D5F43257-430E-4615-BE9C-83B5D5569E92}.Release|Mixed Platforms.Build.0 = Release|x86
 		{D5F43257-430E-4615-BE9C-83B5D5569E92}.Release|x86.ActiveCfg = Release|x86
 		{D5F43257-430E-4615-BE9C-83B5D5569E92}.Release|x86.Build.0 = Release|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Debug|x86.ActiveCfg = Debug|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Debug|x86.Build.0 = Debug|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Release|Any CPU.ActiveCfg = Release|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Release|Mixed Platforms.Build.0 = Release|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Release|x86.ActiveCfg = Release|x86
-		{3D2B26A1-B85C-4B35-93B5-51C0C972C7DD}.Release|x86.Build.0 = Release|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Debug|x86.ActiveCfg = Debug|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Debug|x86.Build.0 = Debug|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Release|Any CPU.ActiveCfg = Release|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Release|x86.ActiveCfg = Release|x86
+		{8AE7D96D-A49F-4269-968C-DC7B823F9C5D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

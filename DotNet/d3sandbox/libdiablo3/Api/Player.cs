@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using libdiablo3.Process;
 
 namespace libdiablo3.Api
 {
@@ -30,6 +29,11 @@ namespace libdiablo3.Api
         {
             Value = value;
             Max = max;
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} / {1}", Value, Max);
         }
     }
 
@@ -78,33 +82,67 @@ namespace libdiablo3.Api
 
         #endregion Classes
 
+        private Injector Injector;
+        private uint ActorPtr;
+        private uint AcdPtr;
+
         public readonly SkillSlots SkillSlots;
         public readonly PlayerOutfit Outfit;
+        public readonly uint WorldID;
         
         public Backpack Backpack { get; internal set; }
         public Stash Stash { get; internal set; }
         public int Gold { get; internal set; }
         public float GlobalCooldown { get; internal set; }
+        public int Level { get; internal set; }
+        public int XP { get; internal set; }
+        public int XPNextLevel { get; internal set; }
 
         public Resource Health { get; internal set; }
-        public Resource Fury { get; internal set; }
-        public Resource Spirit { get; internal set; }
-        public Resource Mana { get; internal set; }
-        public Resource ArcanePower { get; internal set; }
-        public Resource Hatred { get; internal set; }
-        public Resource Discipline { get; internal set; }
+        public ResourceType PrimaryResourceType { get; internal set; }
+        public ResourceType SecondaryResourceType { get; internal set; }
+        public Resource PrimaryResource { get; internal set; }
+        public Resource SecondaryResource { get; internal set; }
 
-        public Player(int snoID)
-            : base(snoID)
+        public int TotalXP
         {
-            SkillSlots = new SkillSlots();
-            Outfit = new PlayerOutfit();
+            get
+            {
+                int prevXp = 0;
+                for (int i = 0; i < this.Level; i++)
+                    prevXp += Experience.Levels[i];
+                return prevXp + this.XP;
+            }
         }
 
-        internal static Player CreateInstance(int snoID, int instanceID, int acdID, AABB aabb,
-            Vector2f direction)
+        public Player(Injector injector, uint actorPtr, uint acdPtr, int snoID, uint worldID)
+            : base(snoID)
         {
-            Player player = new Player(snoID);
+            Injector = injector;
+            ActorPtr = actorPtr;
+            AcdPtr = acdPtr;
+            SkillSlots = new SkillSlots();
+            Outfit = new PlayerOutfit();
+            WorldID = worldID;
+
+            PrimaryResourceType = ResourceType.None;
+            SecondaryResourceType = ResourceType.None;
+        }
+
+        public void UsePower(PowerName power, Actor target)
+        {
+            Injector.UsePower(ActorPtr, AcdPtr, new D3PowerInfo((uint)power, (uint)target.AcdID)); 
+        }
+
+        public void UsePower(PowerName power, Vector3f target)
+        {
+            Injector.UsePower(ActorPtr, AcdPtr, new D3PowerInfo((uint)power, target, WorldID));
+        }
+
+        internal static Player CreateInstance(Injector injector, uint actorPtr, uint acdPtr,
+            int snoID, int instanceID, int acdID, AABB aabb, Vector2f direction, uint worldID)
+        {
+            Player player = new Player(injector, actorPtr, acdPtr, snoID, worldID);
             player.InstanceID = instanceID;
             player.AcdID = acdID;
             player.BoundingBox = aabb;

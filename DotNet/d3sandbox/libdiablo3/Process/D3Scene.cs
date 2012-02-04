@@ -35,7 +35,7 @@ namespace libdiablo3.Process
             this.SnoID = BitConverter.ToUInt32(data, 220);
             this.Position = new Vector3f(data, 240);
             this.NavMeshPtr = BitConverter.ToUInt32(data, 380);
-            this.Active = (memReader.D3.ReadUInt(ptr + 396) & 1) != 0;
+            this.Active = (memReader.ReadUInt(ptr + 396) & 1) != 0;
 
             uint ptr2 = BitConverter.ToUInt32(data, 604);
             if (ptr2 != 0)

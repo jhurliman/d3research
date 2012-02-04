@@ -50,6 +50,45 @@ namespace d3codegen
 
             #endregion Scenes
 
+            #region Experience
+
+            List<ExperienceTable> xpTable = null;
+            foreach (Asset asset in MPQStorage.Data.Assets[SNOGroup.GameBalance].Values)
+            {
+                if (((GameBalance)asset.Data).Experience.Count > 0)
+                {
+                    xpTable = ((GameBalance)asset.Data).Experience;
+                    break;
+                }
+            }
+
+            using (StreamWriter xpWriter = new StreamWriter("Experience.cs"))
+            {
+                xpWriter.WriteLine("using System;");
+                xpWriter.WriteLine();
+                xpWriter.WriteLine("namespace libdiablo3.Api");
+                xpWriter.WriteLine("{");
+                xpWriter.WriteLine("    public static class Experience");
+                xpWriter.WriteLine("    {");
+                xpWriter.WriteLine("        public static int[] Levels =");
+                xpWriter.WriteLine("        {");
+
+                int prevXP = 0;
+                for (int i = 0; i < xpTable.Count; i++)
+                {
+                    int xp = xpTable[i].Exp - prevXP;
+                    prevXP = xpTable[i].Exp;
+                    xpWriter.WriteLine("            " + xp + ", // " + i);
+                }
+
+                xpWriter.WriteLine("        };");
+                xpWriter.WriteLine("    }");
+                xpWriter.WriteLine("}");
+                xpWriter.WriteLine();
+            }
+
+            #endregion Experience
+
             #region Item Types
 
             Dictionary<int, ItemTable> items = new Dictionary<int, ItemTable>();

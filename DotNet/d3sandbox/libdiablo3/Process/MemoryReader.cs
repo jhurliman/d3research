@@ -69,15 +69,30 @@ namespace libdiablo3.Process
         public uint pAttributes;
         public uint pD3DDevice;
 
+        internal IntPtr smallBuffer;
+        internal IntPtr attribBuffer;
+        internal IntPtr acdBuffer;
+
         public MemoryReader(BlackMagic d3)
         {
             this.D3 = d3;
+
+            smallBuffer = Marshal.AllocHGlobal(4);
+            attribBuffer = Marshal.AllocHGlobal(12);
+            acdBuffer = Marshal.AllocHGlobal(Offsets.SIZEOF_ACD);
+        }
+
+        ~MemoryReader()
+        {
+            Marshal.FreeHGlobal(smallBuffer);
+            Marshal.FreeHGlobal(attribBuffer);
+            Marshal.FreeHGlobal(acdBuffer);
         }
 
         public bool IsGameRunning()
         {
-            uint objMgr = D3.ReadUInt(Offsets.OBJMGR);
-            uint actors = D3.ReadUInt(objMgr + Offsets.OBJMGR_ACTORS_OFFSET);
+            uint objMgr = ReadUInt(Offsets.OBJMGR);
+            uint actors = ReadUInt(objMgr + Offsets.OBJMGR_ACTORS_OFFSET);
             return actors != 0;
         }
 
@@ -86,7 +101,7 @@ namespace libdiablo3.Process
             try
             {
                 // Fetch the global pointer to the object manager
-                pObjMgr = D3.ReadUInt(Offsets.OBJMGR);
+                pObjMgr = ReadUInt(Offsets.OBJMGR);
 
                 pRActors = GetActorContainer();
                 if (pRActors == Offsets.INVALID)
@@ -96,14 +111,16 @@ namespace libdiablo3.Process
                 pUI = GetUIContainer();
                 pPlayer = GetPlayerPtr();
 
-                // Fetch the pointer to the thread-local object manager
-                pTLSObjMgr = GetTLSPointer();
+                // Fetch the pointer to the thread-local object manager, if we
+                // haven't yet
+                if (pTLSObjMgr == 0)
+                    pTLSObjMgr = GetTLSPointer();
 
                 pACDs = GetACDContainer();
                 pAttributes = GetAttributeContainer();
                 pD3DDevice = GetDirect3DDevice();
 
-                EndSceneAddr = D3.ReadUInt(D3.ReadUInt(pD3DDevice) + Offsets.D3D_DEVICE_ENDSCENE_OFFSET);
+                EndSceneAddr = ReadUInt(ReadUInt(pD3DDevice) + Offsets.D3D_DEVICE_ENDSCENE_OFFSET);
             }
             catch (Exception)
             {
@@ -119,7 +136,7 @@ namespace libdiablo3.Process
         public D3Actor GetPlayer()
         {
             // Fetch the current player actorID
-            uint actorID = D3.ReadUInt(pPlayer + Offsets.PLAYER_ACTORID_OFFSET);
+            uint actorID = ReadUInt(pPlayer + Offsets.PLAYER_ACTORID_OFFSET);
             if (actorID == Offsets.INVALID)
                 return null;
 
@@ -148,18 +165,25 @@ namespace libdiablo3.Process
         public Dictionary<int, D3Actor> GetActors()
         {
             // Grab the size of the RActors array
-            int arraySize = D3.ReadInt(pRActors + Offsets.ARRAY_SIZE_OFFSET);
+            int arraySize = ReadInt(pRActors + Offsets.ARRAY_SIZE_OFFSET);
             if (arraySize == 0)
                 return new Dictionary<int,D3Actor>(0);
 
-            // Grab the first actor
-            uint pRActor = D3.ReadUInt(D3.ReadUInt(pRActors + Offsets.ARRAY_START_PTR_OFFSET));
+            uint v0 = ReadUInt(pRActors + Offsets.ARRAY_START_PTR_OFFSET);
+            int v1 = ReadInt(pRActors + Offsets.ARRAY_HASHING_OFFSET);
 
-            // Loop through the array and grab all valid actor objects
             Dictionary<int, D3Actor> actors = new Dictionary<int,D3Actor>(arraySize);
             for (uint i = 0; i < arraySize; i++)
             {
-                D3Actor actor = GetActor(pRActor + i * Offsets.SIZEOF_RACTOR);
+                uint ptr = Offsets.INVALID;
+                while (true)
+                {
+                    ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_RACTOR * (uint)(i & ((1 << v1) - 1));
+                    if (ReadUInt(ptr) != Offsets.INVALID)
+                        break;
+                }
+
+                D3Actor actor = GetActor(ptr);
                 if (actor != null)
                     actors.Add(actor.ActorID, actor);
             }
@@ -170,18 +194,25 @@ namespace libdiablo3.Process
         public Dictionary<int, D3ActorCommonData> GetACDs()
         {
             // Grab the size of the ActorCommonData array
-            int arraySize = D3.ReadInt(pACDs + Offsets.ARRAY_SIZE_OFFSET);
+            int arraySize = ReadInt(pACDs + Offsets.ARRAY_SIZE_OFFSET);
             if (arraySize == 0)
                 return new Dictionary<int, D3ActorCommonData>(0);
 
-            // Grab the first actor
-            uint pACD = D3.ReadUInt(D3.ReadUInt(pACDs + Offsets.ARRAY_START_PTR_OFFSET));
+            uint v0 = ReadUInt(pACDs + Offsets.ARRAY_START_PTR_OFFSET);
+            int v1 = ReadInt(pACDs + Offsets.ARRAY_HASHING_OFFSET);
 
-            // Loop through the array and grab all valid ACD objects
             Dictionary<int, D3ActorCommonData> acds = new Dictionary<int, D3ActorCommonData>(arraySize);
             for (uint i = 0; i < arraySize; i++)
             {
-                D3ActorCommonData acd = GetACD(pACD + i * Offsets.SIZEOF_ACD);
+                uint ptr = Offsets.INVALID;
+                while (true)
+                {
+                    ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_ACD * (uint)(i & ((1 << v1) - 1));
+                    if (ReadUInt(ptr) != Offsets.INVALID)
+                        break;
+                }
+
+                D3ActorCommonData acd = GetACD(ptr);
                 if (acd != null)
                     acds.Add(acd.AcdID, acd);
             }
@@ -192,10 +223,10 @@ namespace libdiablo3.Process
         public List<D3Scene> GetScenes()
         {
             // Grab the size of the Scenes array
-            int sceneArraySize = D3.ReadInt(pScenes + Offsets.ARRAY_SIZE_OFFSET);
+            int sceneArraySize = ReadInt(pScenes + Offsets.ARRAY_SIZE_OFFSET);
 
             // Grab the first scene
-            uint pScene = D3.ReadUInt(pScenes + Offsets.ARRAY_START_PTR_OFFSET);
+            uint pScene = ReadUInt(pScenes + Offsets.ARRAY_START_PTR_OFFSET);
 
             // Loop through the array and grab all valid scene objects
             List<D3Scene> scenes = new List<D3Scene>(sceneArraySize);
@@ -213,14 +244,14 @@ namespace libdiablo3.Process
         {
             uint ptr;
             uint attribID = Offsets.ATTRIBUTE_MASK | (uint)attrib.ID;
-            uint v0 = D3.ReadUInt(attributesPtr + 16);
+            uint v0 = ReadUInt(attributesPtr + 16);
 
-            ptr = D3.ReadUInt(D3.ReadUInt(v0 + 8) + 4 * (D3.ReadUInt(v0 + Offsets.ARRAY_SLOTCOUNT_OFFSET) & (attribID ^ (attribID >> 16))));
+            ptr = ReadUInt(ReadUInt(v0 + 8) + 4 * (ReadUInt(v0 + Offsets.ATTRIB_SLOTCOUNT_OFFSET) & (attribID ^ (attribID >> 16))));
             if (ptr != 0)
             {
-                while (D3.ReadUInt(ptr + 4) != attribID)
+                while (ReadUInt(ptr + 4) != attribID)
                 {
-                    ptr = D3.ReadUInt(ptr);
+                    ptr = ReadUInt(ptr);
                     if (ptr == 0)
                         return null;
                 }
@@ -235,50 +266,48 @@ namespace libdiablo3.Process
         /// Fetch all attributes associated with a given actor
         /// </summary>
         /// <param name="attributesPtr">Pointer to an attributes container</param>
-        public Dictionary<D3Attribute, D3AttributeValue> GetAttributes(uint attributesPtr)
+        public D3AttributeMap GetAttributes(uint attributesPtr)
         {
-            Dictionary<D3Attribute, D3AttributeValue> attributes = new Dictionary<D3Attribute, D3AttributeValue>();
+            D3AttributeMap attributes = new D3AttributeMap();
             
-            uint v0 = D3.ReadUInt(attributesPtr + 16);
-            uint capacity = D3.ReadUInt(v0 + Offsets.ARRAY_SLOTCOUNT_OFFSET);
+            uint v0 = ReadUInt(attributesPtr + 16);
+            uint p0 = ReadUInt(v0 + 8);
+            uint capacity = ReadUInt(v0 + Offsets.ATTRIB_SLOTCOUNT_OFFSET);
 
             uint basePtr;
             uint ptr;
-            for (uint i = 0; i < capacity; i++)
-            {
-                basePtr = D3.ReadUInt(D3.ReadUInt(v0 + 8) + 4 * i);
-                if (basePtr != 0 && basePtr != Offsets.INVALID)
-                {
-                    ptr = basePtr;
-                    while (ptr != 0)
-                    {
-                        uint attribID = D3.ReadUInt(ptr + 4);
-                        if (attribID != Offsets.INVALID && (attribID & Offsets.ATTRIBUTE_MASK) == Offsets.ATTRIBUTE_MASK)
-                        {
-                            D3Attribute attrib = D3Attribute.AttributesMap[(int)(attribID & 0xFFF)];
-                            attributes.Add(attrib, ReadAttribute(ptr, attrib));
-                        }
+            byte[] data = D3.ReadBytes(p0, 4 * (int)capacity);
 
-                        ptr = D3.ReadUInt(ptr);
+            unsafe
+            {
+                fixed (byte* bytePtr = data)
+                {
+                    uint* ptrs = (uint*)bytePtr;
+
+                    for (int i = 0; i < capacity; i++)
+                    {
+                        basePtr = *(ptrs + i);
+                        if (basePtr != 0 && basePtr != Offsets.INVALID)
+                        {
+                            ptr = basePtr;
+                            while (ptr != 0)
+                            {
+                                byte[] attribData = D3.ReadBytes(ptr, 12, attribBuffer);
+                                ptr = BitConverter.ToUInt32(attribData, 0);
+                                uint attribID = BitConverter.ToUInt32(attribData, 4);
+
+                                if (attribID != Offsets.INVALID)
+                                {
+                                    D3Attribute attrib = D3Attribute.AttributesMap[(int)(attribID & 0xFFF)];
+                                    if (attrib.IsInteger)
+                                        attributes[attribID] = new D3AttributeValue(BitConverter.ToInt32(attribData, 8));
+                                    else
+                                        attributes[attribID] = new D3AttributeValue(BitConverter.ToSingle(attribData, 8));
+                                }
+                            }
+                        }
                     }
                 }
-            }
-
-            return attributes;
-        }
-
-        public Dictionary<D3Attribute, D3AttributeValue> GetActorAttributesSlow(D3Actor actor)
-        {
-            Dictionary<D3Attribute, D3AttributeValue> attributes = new Dictionary<D3Attribute, D3AttributeValue>();
-
-            for (var i = 0; i < D3Attribute.Attributes.Length; i++)
-            {
-                D3Attribute attribute = D3Attribute.Attributes[i];
-                if (actor.Acd == null)
-                    continue;
-                D3AttributeValue? value = GetAttribute(actor.Acd.AttributesPtr, attribute);
-                if (value.HasValue)
-                    attributes.Add(attribute, value.Value);
             }
 
             return attributes;
@@ -288,19 +317,19 @@ namespace libdiablo3.Process
         {
             uint id = ProcessUtils.HashLowerCase(uiHandle);
             uint index = id & 0x7FF;
-            uint uiPtrArray = D3.ReadUInt(D3.ReadUInt(pUI) + 8);
-            uint lastAddr = D3.ReadUInt(uiPtrArray + (index * 4));
+            uint uiPtrArray = ReadUInt(ReadUInt(pUI) + 8);
+            uint lastAddr = ReadUInt(uiPtrArray + (index * 4));
 
             while (true)
             {
                 if (lastAddr == 0)
                     return Offsets.INVALID;
 
-                uint nextAddr = D3.ReadUInt(D3.ReadUInt(lastAddr + Offsets.UI_1_OFFSET) + Offsets.UI_2_OFFSET);
+                uint nextAddr = ReadUInt(ReadUInt(lastAddr + Offsets.UI_1_OFFSET) + Offsets.UI_2_OFFSET);
                 if (nextAddr == id)
-                    return D3.ReadUInt(lastAddr + Offsets.UI_3_OFFSET);
+                    return ReadUInt(lastAddr + Offsets.UI_3_OFFSET);
 
-                lastAddr = D3.ReadUInt(lastAddr);
+                lastAddr = ReadUInt(lastAddr);
             }
         }
 
@@ -310,25 +339,25 @@ namespace libdiablo3.Process
             if (ptr == Offsets.INVALID)
                 return null;
 
-            int length = D3.ReadInt(ptr + Offsets.UI_TEXTBOX_LENGTH);
-            return D3.ReadASCIIString(D3.ReadUInt(ptr + Offsets.UI_TEXTBOX_STR), length);
+            int length = ReadInt(ptr + Offsets.UI_TEXTBOX_LENGTH);
+            return D3.ReadASCIIString(ReadUInt(ptr + Offsets.UI_TEXTBOX_STR), length);
         }
 
         public D3AttributeValue ReadAttribute(uint ptr, D3Attribute attrib)
         {
             if (attrib.IsInteger)
-                return new D3AttributeValue(D3.ReadInt(ptr + 8));
+                return new D3AttributeValue(ReadInt(ptr + 8));
             else
-                return new D3AttributeValue(D3.ReadFloat(ptr + 8));
+                return new D3AttributeValue(ReadFloat(ptr + 8));
         }
 
         public uint GetPlayerPtr()
         {
-            uint count = D3.ReadUInt(D3.ReadUInt(pObjMgr + Offsets.OBJMGR_PLAYER_OFFSET));
+            uint count = ReadUInt(ReadUInt(pObjMgr + Offsets.OBJMGR_PLAYER_OFFSET));
             if (count == Offsets.INVALID)
                 return Offsets.INVALID;
 
-            uint v1 = D3.ReadUInt(pObjMgr + Offsets.PLAYER_OFFSET1 + Offsets.PLAYER_OFFSET2);
+            uint v1 = ReadUInt(pObjMgr + Offsets.PLAYER_OFFSET1 + Offsets.PLAYER_OFFSET2);
             if (v1 == 0)
                 return Offsets.INVALID;
 
@@ -344,7 +373,7 @@ namespace libdiablo3.Process
         /// </summary>
         public uint GetActorContainer()
         {
-            uint pActors = D3.ReadUInt(pObjMgr + Offsets.OBJMGR_ACTORS_OFFSET);
+            uint pActors = ReadUInt(pObjMgr + Offsets.OBJMGR_ACTORS_OFFSET);
             if (pActors == 0)
                 return Offsets.INVALID;
 
@@ -358,7 +387,7 @@ namespace libdiablo3.Process
         /// </summary>
         public uint GetScenesContainer()
         {
-            uint pScenes = D3.ReadUInt(pObjMgr + Offsets.OBJMGR_SCENES_OFFSET);
+            uint pScenes = ReadUInt(pObjMgr + Offsets.OBJMGR_SCENES_OFFSET);
             if (pScenes == 0)
                 return Offsets.INVALID;
 
@@ -372,7 +401,7 @@ namespace libdiablo3.Process
         /// </summary>
         public uint GetUIContainer()
         {
-            uint pUI = D3.ReadUInt(pObjMgr + Offsets.OBJMGR_UI_OFFSET);
+            uint pUI = ReadUInt(pObjMgr + Offsets.OBJMGR_UI_OFFSET);
             return pUI;
         }
 
@@ -404,8 +433,8 @@ namespace libdiablo3.Process
                                     (uint)Marshal.SizeOf(typeof(THREAD_BASIC_INFORMATION)), IntPtr.Zero) == 0)
                                 {
                                     uint tlsOffset = (uint)tbi.TebBaseAddress.ToInt32() + Offsets.TLS_OFFSET;
-                                    uint tlsIndex = D3.ReadUInt(Offsets.TLS_INDEX);
-                                    tlsPtr = D3.ReadUInt(D3.ReadUInt(D3.ReadUInt(tlsOffset + (tlsIndex * 4))));
+                                    uint tlsIndex = ReadUInt(Offsets.TLS_INDEX);
+                                    tlsPtr = ReadUInt(ReadUInt(ReadUInt(tlsOffset + (tlsIndex * 4))));
                                     
                                     CloseHandle(threadHandle);
                                     break;
@@ -429,7 +458,7 @@ namespace libdiablo3.Process
         /// </summary>
         public uint GetAttributeContainer()
         {
-            return D3.ReadUInt(D3.ReadUInt(pTLSObjMgr + Offsets.TLS_ATTRIBUTES_OFFSET1) +
+            return ReadUInt(ReadUInt(pTLSObjMgr + Offsets.TLS_ATTRIBUTES_OFFSET1) +
                 Offsets.TLS_ATTRIBUTES_OFFSET2);
         }
 
@@ -438,12 +467,12 @@ namespace libdiablo3.Process
         /// </summary>
         public uint GetACDContainer()
         {
-            return D3.ReadUInt(D3.ReadUInt(pTLSObjMgr + Offsets.TLS_ACD_OFFSET));
+            return ReadUInt(ReadUInt(pTLSObjMgr + Offsets.TLS_ACD_OFFSET));
         }
 
         public uint GetDirect3DDevice()
         {
-            return D3.ReadUInt(D3.ReadUInt(Offsets.D3DMANAGER_PTR) + Offsets.D3DMANAGER_DEVICE_OFFSET);
+            return ReadUInt(ReadUInt(Offsets.D3DMANAGER_PTR) + Offsets.D3DMANAGER_DEVICE_OFFSET);
         }
 
         /// <summary>
@@ -452,7 +481,8 @@ namespace libdiablo3.Process
         /// <param name="ptr">Pointer to the RActor to read</param>
         public D3Actor GetActor(uint ptr)
         {
-            if (D3.ReadUInt(ptr) != Offsets.INVALID)
+            uint id = ReadUInt(ptr);
+            if (id != Offsets.INVALID && id != 0)
                 return new D3Actor(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_RACTOR));
             return null;
         }
@@ -463,8 +493,9 @@ namespace libdiablo3.Process
         /// <param name="ptr">Pointer to the ActorCommonData to read</param>
         public D3ActorCommonData GetACD(uint ptr)
         {
-            if (D3.ReadUInt(ptr) != Offsets.INVALID)
-                return new D3ActorCommonData(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_ACD));
+            uint id = ReadUInt(ptr);
+            if (id != Offsets.INVALID && id != 0)
+                return new D3ActorCommonData(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_ACD, acdBuffer));
             return null;
         }
 
@@ -474,7 +505,8 @@ namespace libdiablo3.Process
         /// <param name="ptr">Pointer to the scene to read</param>
         public D3Scene GetScene(uint ptr)
         {
-            if (D3.ReadUInt(ptr) != Offsets.INVALID)
+            uint id = ReadUInt(ptr);
+            if (id != Offsets.INVALID && id != 0)
                 return new D3Scene(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_SCENE));
             return null;
         }
@@ -490,17 +522,48 @@ namespace libdiablo3.Process
         {
             uint shortID = id & 0xFFFF;
 
-            if (shortID >= D3.ReadUInt(container + Offsets.ARRAY_CAPACITY_OFFSET))
+            if (shortID >= ReadUInt(container + Offsets.ARRAY_CAPACITY_OFFSET))
                 return Offsets.INVALID;
 
-            uint v0 = D3.ReadUInt(container + Offsets.ARRAY_START_PTR_OFFSET);
-            int v1 = D3.ReadInt(container + Offsets.ARRAY_HASHING_OFFSET);
+            uint v0 = ReadUInt(container + Offsets.ARRAY_START_PTR_OFFSET);
+            int v1 = ReadInt(container + Offsets.ARRAY_HASHING_OFFSET);
 
-            uint ptr = D3.ReadUInt(v0 + 4 * (shortID >> v1)) + objSize * (uint)(shortID & ((1 << v1) - 1));
-            if (D3.ReadUInt(ptr) == id)
+            uint ptr = ReadUInt(v0 + 4 * (shortID >> v1)) + objSize * (uint)(shortID & ((1 << v1) - 1));
+            if (ReadUInt(ptr) == id)
                 return ptr;
 
             return Offsets.INVALID;
+        }
+
+        public uint IndexToPtr(uint container, uint objSize, uint index)
+        {
+            uint v0 = ReadUInt(pACDs + Offsets.ARRAY_START_PTR_OFFSET);
+            int v1 = ReadInt(pACDs + Offsets.ARRAY_HASHING_OFFSET);
+
+            uint ptr = Offsets.INVALID;
+            while (true)
+            {
+                ptr = ReadUInt(v0 + 4 * (index >> v1)) + Offsets.SIZEOF_ACD * (uint)(index & ((1 << v1) - 1));
+                if (ReadUInt(ptr) != Offsets.INVALID)
+                    break;
+            }
+
+            return ptr;
+        }
+
+        public uint ReadUInt(uint dwAddress)
+        {
+            return D3.ReadUInt(dwAddress, false, smallBuffer);
+        }
+
+        public int ReadInt(uint dwAddress)
+        {
+            return D3.ReadInt(dwAddress, false, smallBuffer);
+        }
+
+        public float ReadFloat(uint dwAddress)
+        {
+            return D3.ReadFloat(dwAddress, false, smallBuffer);
         }
     }
 }

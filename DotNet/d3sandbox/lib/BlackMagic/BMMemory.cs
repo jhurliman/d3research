@@ -200,6 +200,14 @@ namespace Magic
 			return SMemory.ReadBytes(this.m_hProcess, dwAddress, nSize);
 		}
 
+        public byte[] ReadBytes(uint dwAddress, int nSize, IntPtr lpBuffer)
+        {
+            if (!this.m_bProcessOpen || this.m_hProcess == IntPtr.Zero)
+                throw new Exception("Process is not open for read/write.");
+
+            return SMemory.ReadBytes(this.m_hProcess, dwAddress, nSize, lpBuffer);
+        }
+
 		/// <summary>
 		/// Reads a value from memory.
 		/// </summary>
@@ -309,6 +317,14 @@ namespace Magic
 			return SMemory.ReadUInt(this.m_hProcess, dwAddress, bReverse);
 		}
 
+        public uint ReadUInt(uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            if (!this.m_bProcessOpen || this.m_hProcess == IntPtr.Zero)
+                throw new Exception("Process is not open for read/write.");
+
+            return SMemory.ReadUInt(this.m_hProcess, dwAddress, bReverse, lpBuffer);
+        }
+
 		/// <summary>
 		/// Reads a value from memory.
 		/// </summary>
@@ -335,6 +351,14 @@ namespace Magic
 
 			return SMemory.ReadInt(this.m_hProcess, dwAddress, bReverse);
 		}
+
+        public int ReadInt(uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            if (!this.m_bProcessOpen || this.m_hProcess == IntPtr.Zero)
+                throw new Exception("Process is not open for read/write.");
+
+            return SMemory.ReadInt(this.m_hProcess, dwAddress, bReverse, lpBuffer);
+        }
 
 		/// <summary>
 		/// Reads a value from memory.
@@ -416,6 +440,14 @@ namespace Magic
 
 			return SMemory.ReadFloat(this.m_hProcess, dwAddress, bReverse);
 		}
+
+        public float ReadFloat(uint dwAddress, bool bReverse, IntPtr lpBuffer)
+        {
+            if (!this.m_bProcessOpen || this.m_hProcess == IntPtr.Zero)
+                throw new Exception("Process is not open for read/write.");
+
+            return SMemory.ReadFloat(this.m_hProcess, dwAddress, bReverse, lpBuffer);
+        }
 
 		/// <summary>
 		/// Reads a value from memory.

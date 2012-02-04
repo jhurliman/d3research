@@ -57,6 +57,22 @@ namespace libdiablo3.Api
         Monk = 0x2000,
     }
 
+    public enum ItemQuality
+    {
+        Invalid = -1,
+        Inferior,
+        Normal,
+        Superior,
+        Magic1,
+        Magic2,
+        Magic3,
+        Rare4,
+        Rare5,
+        Rare6,
+        Legendary,
+        Artifact,
+    }
+
     #endregion Enums
 
     #region Helper Classes
@@ -67,6 +83,17 @@ namespace libdiablo3.Api
         public readonly int Hash;
         public readonly int ParentType;
         public readonly ItemFlags Flags;
+
+        public ItemType BaseType
+        {
+            get
+            {
+                var curType = this;
+                while (curType.ParentType != -1)
+                    curType = ItemTypes.Types[curType.ParentType];
+                return curType;
+            }
+        }
 
         public ItemType(string name, int hash, int parentType, int flags)
         {
@@ -86,8 +113,7 @@ namespace libdiablo3.Api
 
     public class Item : Actor
     {
-        private ItemType type;
-
+        public ItemType ItemType { get; internal set; }
         public ItemPlacement Placement { get; internal set; }
         public int InventoryX { get; internal set; }
         public int InventoryY { get; internal set; }
@@ -121,7 +147,7 @@ namespace libdiablo3.Api
             Vector2f direction, ItemType type, int placement, int inventoryX, int inventoryY)
         {
             Item item = template.MemberwiseClone() as Item;
-            item.type = type;
+            item.ItemType = type;
             item.InstanceID = instanceID;
             item.AcdID = acdID;
             item.BoundingBox = aabb;
@@ -139,10 +165,10 @@ namespace libdiablo3.Api
 
         private bool IsSubType(int rootTypeHash)
         {
-            if (type.Hash == rootTypeHash)
+            if (ItemType.Hash == rootTypeHash)
                 return true;
 
-            var curType = type;
+            var curType = ItemType;
             while (curType.ParentType != -1)
             {
                 curType = ItemTypes.Types[curType.ParentType];

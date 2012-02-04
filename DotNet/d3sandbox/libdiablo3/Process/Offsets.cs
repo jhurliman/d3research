@@ -13,7 +13,8 @@ namespace libdiablo3.Process
         public const uint ARRAY_SIZE_OFFSET = 0x10C;
         public const uint ARRAY_START_PTR_OFFSET = 0x148;
         public const uint ARRAY_HASHING_OFFSET = 0x18C;
-        public const uint ARRAY_SLOTCOUNT_OFFSET = 0x418;
+
+        public const uint ATTRIB_SLOTCOUNT_OFFSET = 0x418;
 
         public const int SIZEOF_RACTOR = 1068;
         public const int SIZEOF_ACD = 720;
