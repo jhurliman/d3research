@@ -42,6 +42,25 @@ namespace libdiablo3.Api
             return false;
         }
 
+        public static bool operator ==(Actor lhs, Actor rhs)
+        {
+            if (lhs == null)
+            {
+                if (rhs == null) return true;
+                return lhs.Equals(rhs);
+            }
+            else
+            {
+                if (rhs == null) return false;
+                return lhs.Equals(rhs);
+            }
+        }
+
+        public static bool operator !=(Actor lhs, Actor rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         public override string ToString()
         {
             return Type.ToString();

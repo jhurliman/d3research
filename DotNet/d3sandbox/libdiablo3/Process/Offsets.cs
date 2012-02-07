@@ -9,6 +9,8 @@ namespace libdiablo3.Process
 
         public const uint INVALID = 0xFFFFFFFF;
 
+        public const uint GOLD_GBID = 0x07869277;
+
         public const uint ARRAY_CAPACITY_OFFSET = 0x100;
         public const uint ARRAY_SIZE_OFFSET = 0x10C;
         public const uint ARRAY_START_PTR_OFFSET = 0x148;

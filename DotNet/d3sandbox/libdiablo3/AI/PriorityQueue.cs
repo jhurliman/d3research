@@ -1,44 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace libdiablo3.AI
 {
-    internal struct HeapEntry
+    public class PriorityQueue<T>
     {
-        public AITask Item;
-        public IComparable Priority;
-
-        public HeapEntry(AITask item, IComparable priority)
+        private struct HeapEntry
         {
-            Item = item;
-            Priority = priority;
+            public T Item;
+            public IComparable Priority;
+
+            public HeapEntry(T item, IComparable priority)
+            {
+                Item = item;
+                Priority = priority;
+            }
+
+            public void Clear()
+            {
+                Item = default(T);
+                Priority = null;
+            }
         }
 
-        public void Clear()
-        {
-            Item = null;
-            Priority = null;
-        }
-    }
-
-    public class AITaskQueue
-    {
         private int count;
         private int capacity;
-        private int version;
         private HeapEntry[] heap;
 
-        public AITaskQueue()
+        public int Count { get { return count; } }
+
+        public PriorityQueue()
         {
             capacity = 15; // 15 is equal to 4 complete levels
             heap = new HeapEntry[capacity];
         }
 
-        public int Count { get { return count; } }
+        public void Clear()
+        {
+            heap = new HeapEntry[capacity];
+        }
 
-        public AITask Dequeue()
+        public T Dequeue()
         {
             if (count == 0)
                 throw new InvalidOperationException();
@@ -47,11 +49,10 @@ namespace libdiablo3.AI
             count--;
             trickleDown(0, heap[count]);
             heap[count].Clear();
-            version++;
             return result;
         }
 
-        public void Enqueue(AITask item, IComparable priority)
+        public void Enqueue(T item, IComparable priority)
         {
             if (priority == null)
                 throw new ArgumentNullException("priority");
@@ -59,15 +60,13 @@ namespace libdiablo3.AI
                 growHeap();
             count++;
             bubbleUp(count - 1, new HeapEntry(item, priority));
-            version++;
         }
 
         private void bubbleUp(int index, HeapEntry he)
         {
             int parent = getParent(index);
-            // note: (index > 0) means there is a parent
-            while ((index > 0) &&
-                  (heap[parent].Priority.CompareTo(he.Priority) < 0))
+            while ((index > 0) && // note: (index > 0) means there is a parent
+                    heap[parent].Priority.CompareTo(he.Priority) < 0)
             {
                 heap[index] = heap[parent];
                 index = parent;
@@ -89,9 +88,7 @@ namespace libdiablo3.AI
         private void growHeap()
         {
             capacity = (capacity * 2) + 1;
-            HeapEntry[] newHeap = new HeapEntry[capacity];
-            System.Array.Copy(heap, 0, newHeap, 0, count);
-            heap = newHeap;
+            Array.Resize(ref heap, capacity);
         }
 
         private void trickleDown(int index, HeapEntry he)

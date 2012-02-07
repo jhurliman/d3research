@@ -37,9 +37,12 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AI\AI.cs" />
+    <Compile Include="AI\AIPathFinder.cs" />
     <Compile Include="AI\AIState.cs" />
     <Compile Include="AI\AITask.cs" />
-    <Compile Include="AI\AITaskQueue.cs" />
+    <Compile Include="AI\PriorityQueue.cs" />
+    <Compile Include="AI\PriorityQueueB.cs" />
     <Compile Include="Api\Actor.cs" />
     <Compile Include="Api\ActorCategory.cs" />
     <Compile Include="Api\ActorName.cs" />

@@ -110,6 +110,25 @@ namespace libdiablo3.Process
             return false;
         }
 
+        public static bool operator ==(D3Attribute lhs, D3Attribute rhs)
+        {
+            if (lhs == null)
+            {
+                if (rhs == null) return true;
+                return lhs.Equals(rhs);
+            }
+            else
+            {
+                if (rhs == null) return false;
+                return lhs.Equals(rhs);
+            }
+        }
+
+        public static bool operator !=(D3Attribute lhs, D3Attribute rhs)
+        {
+            return !(lhs == rhs);
+        }
+
         public override int GetHashCode()
         {
             return ID;

@@ -31,25 +31,26 @@ but do not trust the data coming from the server emulator as canonical.
 ## Working ##
 
 * Enumerate scene entities
-* Parse basic entity information
-* Basic actor classification (can tell monsters, loot and player apart from 
-  everything else)
+* Parse entity information
+* Actor classification
+* Identify special entities: waypoints, stash
 * Enumerate attributes for each actor
 * Enumerate scenes
 * Walk to location
 * Attack enemy/object
 * Use different attacks/abilities
+* Open chests/doors
+* Determine what attacks/items are mapped to hotkeys
+* Inventory enumeration
+* Create an API for AI
+* Enumerate navcells in scenes and build a navigation map
+* Path-finding through worlds
 
 ## TODO ##
 
-* Open chests/doors
-* Enumerate navcells in scenes and build a navigation map
-![Navcell enumeration example](http://dl.dropbox.com/u/6736045/navcell-list.jpg)
-![Navcell display example](http://dl.dropbox.com/u/4381027/bssknuul.jpg)
-* Determine what attacks/items are mapped to hotkeys
-* Path-finding through worlds
-* Create an API for AI
+* Determine item value
+* Use town portals and waypoints
 * Implement class AI
-* Inventory enumeration
-* Identify special entities: waypoints, stash
 * Sell inventory items to NPCs
+* Consistent 100ms tick
+* EndScene mid-function hook

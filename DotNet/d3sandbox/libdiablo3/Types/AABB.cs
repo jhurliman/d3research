@@ -38,6 +38,20 @@ namespace libdiablo3
             return true; // Intersects if above fails
         }
 
+        public bool IsWithin(Vector2f v)
+        {
+            if (// Max < v
+                this.Max.X < v.X ||
+                this.Max.Y < v.Y ||
+                // Min > v
+                this.Min.X > v.X ||
+                this.Min.Y > v.Y)
+            {
+                return false;
+            }
+            return true; // Intersects if above fails
+        }
+
         public bool Intersects(AABB other)
         {
             if (// Max < other.Min
@@ -57,6 +71,13 @@ namespace libdiablo3
         public override string ToString()
         {
             return string.Format("AABB: min:{0} max:{1}", this.Min, this.Max);
+        }
+
+        public static AABB operator +(AABB lhs, AABB rhs)
+        {
+            lhs.Min = lhs.Min + rhs.Min;
+            lhs.Max = lhs.Min + rhs.Max;
+            return lhs;
         }
     }
 }
