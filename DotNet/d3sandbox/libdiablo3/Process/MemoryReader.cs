@@ -55,6 +55,8 @@ namespace libdiablo3.Process
 
         #endregion Win32 API Imports
 
+        private const int BUFFER_SIZE = 4096;
+
         public uint EndSceneAddr;
 
         public BlackMagic D3;
@@ -69,24 +71,18 @@ namespace libdiablo3.Process
         public uint pAttributes;
         public uint pD3DDevice;
 
-        internal IntPtr smallBuffer;
-        internal IntPtr attribBuffer;
-        internal IntPtr acdBuffer;
+        internal IntPtr buffer;
 
         public MemoryReader(BlackMagic d3)
         {
             this.D3 = d3;
 
-            smallBuffer = Marshal.AllocHGlobal(4);
-            attribBuffer = Marshal.AllocHGlobal(12);
-            acdBuffer = Marshal.AllocHGlobal(Offsets.SIZEOF_ACD);
+            buffer = Marshal.AllocHGlobal(BUFFER_SIZE);
         }
 
         ~MemoryReader()
         {
-            Marshal.FreeHGlobal(smallBuffer);
-            Marshal.FreeHGlobal(attribBuffer);
-            Marshal.FreeHGlobal(acdBuffer);
+            Marshal.FreeHGlobal(buffer);
         }
 
         public bool IsGameRunning()
@@ -145,12 +141,12 @@ namespace libdiablo3.Process
             if (actorPtr == Offsets.INVALID)
                 return null;
 
-            return new D3Actor(this, actorPtr, D3.ReadBytes(actorPtr, Offsets.SIZEOF_RACTOR));
+            return new D3Actor(this, actorPtr, ReadBytes(actorPtr, Offsets.SIZEOF_RACTOR));
         }
 
         public uint[] GetActiveSkills()
         {
-            byte[] data = D3.ReadBytes(pPlayer + Offsets.PLAYER_ACTIVESKILLS_OFFSET,
+            byte[] data = ReadBytes(pPlayer + Offsets.PLAYER_ACTIVESKILLS_OFFSET,
                 Offsets.ACTIVE_SKILL_COUNT * Offsets.SIZEOF_ACTIVESKILL);
 
             uint[] skills = new uint[Offsets.ACTIVE_SKILL_COUNT];
@@ -268,15 +264,16 @@ namespace libdiablo3.Process
         /// <param name="attributesPtr">Pointer to an attributes container</param>
         public D3AttributeMap GetAttributes(uint attributesPtr)
         {
-            D3AttributeMap attributes = new D3AttributeMap();
-            
             uint v0 = ReadUInt(attributesPtr + 16);
             uint p0 = ReadUInt(v0 + 8);
-            uint capacity = ReadUInt(v0 + Offsets.ATTRIB_SLOTCOUNT_OFFSET);
+            int capacity = ReadInt(v0 + Offsets.ATTRIB_SLOTCOUNT_OFFSET);
+            int count = ReadInt(v0 + Offsets.ATTRIB_COUNT_OFFSET);
+
+            D3AttributeMap attributes = new D3AttributeMap(count);
 
             uint basePtr;
             uint ptr;
-            byte[] data = D3.ReadBytes(p0, 4 * (int)capacity);
+            byte[] data = ReadBytes(p0, 4 * capacity);
 
             unsafe
             {
@@ -292,13 +289,13 @@ namespace libdiablo3.Process
                             ptr = basePtr;
                             while (ptr != 0)
                             {
-                                byte[] attribData = D3.ReadBytes(ptr, 12, attribBuffer);
+                                byte[] attribData = ReadBytes(ptr, 12);
                                 ptr = BitConverter.ToUInt32(attribData, 0);
                                 uint attribID = BitConverter.ToUInt32(attribData, 4);
 
                                 if (attribID != Offsets.INVALID)
                                 {
-                                    D3Attribute attrib = D3Attribute.AttributesMap[(int)(attribID & 0xFFF)];
+                                    D3Attribute attrib = D3Attribute.AttributesMap[attribID & 0xFFF];
                                     if (attrib.IsInteger)
                                         attributes[attribID] = new D3AttributeValue(BitConverter.ToInt32(attribData, 8));
                                     else
@@ -483,7 +480,7 @@ namespace libdiablo3.Process
         {
             uint id = ReadUInt(ptr);
             if (id != Offsets.INVALID && id != 0)
-                return new D3Actor(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_RACTOR));
+                return new D3Actor(this, ptr, ReadBytes(ptr, Offsets.SIZEOF_RACTOR));
             return null;
         }
 
@@ -495,7 +492,7 @@ namespace libdiablo3.Process
         {
             uint id = ReadUInt(ptr);
             if (id != Offsets.INVALID && id != 0)
-                return new D3ActorCommonData(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_ACD, acdBuffer));
+                return new D3ActorCommonData(this, ptr, ReadBytes(ptr, Offsets.SIZEOF_ACD));
             return null;
         }
 
@@ -507,7 +504,7 @@ namespace libdiablo3.Process
         {
             uint id = ReadUInt(ptr);
             if (id != Offsets.INVALID && id != 0)
-                return new D3Scene(this, ptr, D3.ReadBytes(ptr, Offsets.SIZEOF_SCENE));
+                return new D3Scene(this, ptr, ReadBytes(ptr, Offsets.SIZEOF_SCENE));
             return null;
         }
 
@@ -553,17 +550,22 @@ namespace libdiablo3.Process
 
         public uint ReadUInt(uint dwAddress)
         {
-            return D3.ReadUInt(dwAddress, false, smallBuffer);
+            return D3.ReadUInt(dwAddress, false, buffer);
         }
 
         public int ReadInt(uint dwAddress)
         {
-            return D3.ReadInt(dwAddress, false, smallBuffer);
+            return D3.ReadInt(dwAddress, false, buffer);
         }
 
         public float ReadFloat(uint dwAddress)
         {
-            return D3.ReadFloat(dwAddress, false, smallBuffer);
+            return D3.ReadFloat(dwAddress, false, buffer);
+        }
+
+        public byte[] ReadBytes(uint dwAddress, int length)
+        {
+            return D3.ReadBytes(dwAddress, length, buffer);
         }
     }
 }

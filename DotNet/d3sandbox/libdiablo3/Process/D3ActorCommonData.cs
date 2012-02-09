@@ -94,16 +94,11 @@ namespace libdiablo3.Process
 
         public static bool operator ==(D3ActorCommonData lhs, D3ActorCommonData rhs)
         {
-            if (lhs == null)
-            {
-                if (rhs == null) return true;
-                return lhs.Equals(rhs);
-            }
-            else
-            {
-                if (rhs == null) return false;
-                return lhs.Equals(rhs);
-            }
+            if (System.Object.ReferenceEquals(lhs, rhs))
+                return true;
+            if (((object)lhs == null) || ((object)rhs == null))
+                return false;
+            return lhs.Equals(rhs);
         }
 
         public static bool operator !=(D3ActorCommonData lhs, D3ActorCommonData rhs)

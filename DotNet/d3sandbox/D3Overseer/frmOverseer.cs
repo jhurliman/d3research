@@ -43,6 +43,8 @@ namespace D3Overseer
         private readonly Pen walkablePen = new Pen(Color.Blue, 1.0f);
 
         private bool donePaintingPreview = true;
+        private DateTime lastPreview;
+        private uint lastScenesCRC;
         private readonly Pen selectionPen = new Pen(Brushes.Blue, 2);
 
         #endregion Map Members
@@ -80,7 +82,19 @@ namespace D3Overseer
                 }
 
                 msg = String.Format("[{0}]: {1}", level.ToString().ToUpper(), msg);
-                txtLog.AppendText(msg + Environment.NewLine);
+
+                switch (level)
+                {
+                    case LogLevel.Error:
+                        txtLog.AppendText(msg + Environment.NewLine, Color.Red);
+                        break;
+                    case LogLevel.Warn:
+                        txtLog.AppendText(msg + Environment.NewLine, Color.Blue);
+                        break;
+                    default:
+                        txtLog.AppendText(msg + Environment.NewLine);
+                        break;
+                }
             }
             catch { }
         }
@@ -124,8 +138,6 @@ namespace D3Overseer
             // Main loop
             while (running)
             {
-                Thread.Sleep(100);
-
                 DateTime start = DateTime.UtcNow;
 
                 d3Api.UpdateWorld(world);
@@ -160,7 +172,11 @@ namespace D3Overseer
 
                 DateTime end = DateTime.UtcNow;
                 TimeSpan timing = end - start;
-                frameTime.AddValue(timing.TotalMilliseconds);
+                double totalMS = timing.TotalMilliseconds;
+                frameTime.AddValue(totalMS);
+
+                int sleepMS = Math.Max(100 - (int)Math.Round(totalMS), 0);
+                Thread.Sleep(sleepMS);
             }
 
             Log(LogLevel.Info, "Shutting down...");
@@ -243,9 +259,7 @@ namespace D3Overseer
                 }
 
                 if (world.Scenes != null)
-                {
                     UpdateMap();
-                }
             }
             catch { }
         }
@@ -255,10 +269,22 @@ namespace D3Overseer
         private void UpdateMap()
         {
             stageBitmap = Draw();
-            previewBitmap = ResizeImage(stageBitmap, picPreview.Width, picPreview.Height);
-
             picMap.Image = stageBitmap;
-            picPreview.Image = previewBitmap;
+
+            bool scenesChanged = false;
+            uint newScenesCRC = world.ScenesCRC;
+            if (lastScenesCRC != newScenesCRC)
+            {
+                scenesChanged = true;
+                lastScenesCRC = newScenesCRC;
+            }
+
+            if (scenesChanged || (DateTime.UtcNow - lastPreview).TotalSeconds >= 5.0)
+            {
+                previewBitmap = ResizeImage(stageBitmap, picPreview.Width, picPreview.Height);
+                picPreview.Image = previewBitmap;
+                lastPreview = DateTime.UtcNow;
+            }
         }
 
         private Bitmap Draw()
@@ -402,23 +428,20 @@ namespace D3Overseer
 
         private static Bitmap ResizeImage(Image image, int width, int height)
         {
-            //a holder for the result
             var result = new Bitmap(width, height);
 
-            //use a graphics object to draw the resized image into the bitmap
             using (Graphics graphics = Graphics.FromImage(result))
             {
-                //set the resize quality modes to high quality
+                // Set the resize quality modes
                 graphics.CompositingQuality = CompositingQuality.HighSpeed;
                 graphics.InterpolationMode = InterpolationMode.Bilinear;
                 graphics.PixelOffsetMode = PixelOffsetMode.None;
                 graphics.SmoothingMode = SmoothingMode.None;
 
-                //draw the image into the target bitmap
+                // Draw the image into the target bitmap
                 graphics.DrawImage(image, 0, 0, result.Width, result.Height);
             }
 
-            //return the resulting bitmap
             return result;
         }
 

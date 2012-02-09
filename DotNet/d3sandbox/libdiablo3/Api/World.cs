@@ -7,6 +7,11 @@ namespace libdiablo3.Api
 {
     public class World
     {
+        private MemoryReader memReader;
+        private Injector injector;
+        private WorldActorEnumerator enumerator;
+        private uint scenesCRC;
+
         public Player Me { get; internal set; }
         public Scene[] Scenes { get; internal set; }
         public Hero[] Heros { get; internal set; }
@@ -17,12 +22,7 @@ namespace libdiablo3.Api
         public Actor[] OtherActors { get; internal set; }
         public byte[,] WalkableGrid { get; internal set; }
         public AABB BoundingBox { get; internal set; }
-
-        private MemoryReader memReader;
-        private Injector injector;
-        private WorldActorEnumerator enumerator;
-        private uint ScenesCRC;
-
+        public uint ScenesCRC { get { return scenesCRC; } }
         public IEnumerable<Actor> AllActors { get { return enumerator; } }
 
         internal World(MemoryReader memReader, Injector injector)
@@ -197,9 +197,9 @@ namespace libdiablo3.Api
             uint curCRC = 0;
             for (int i = 0; i < d3Scenes.Count; i++)
                 curCRC ^= d3Scenes[i].SceneID;
-            if (this.ScenesCRC == curCRC)
+            if (this.scenesCRC == curCRC)
                 return;
-            this.ScenesCRC = curCRC;
+            this.scenesCRC = curCRC;
 
             Scene[] scenes = new Scene[d3Scenes.Count];
             for (int i = 0; i < d3Scenes.Count; i++)

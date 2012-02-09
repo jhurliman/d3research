@@ -7,7 +7,7 @@ namespace libdiablo3.Process
     public partial class D3Attribute
     {
         public static readonly D3Attribute[] Attributes;
-        public static readonly Dictionary<int, D3Attribute> AttributesMap;
+        public static readonly Dictionary<uint, D3Attribute> AttributesMap;
 
         static D3Attribute()
         {
@@ -21,9 +21,9 @@ namespace libdiablo3.Process
                 .OrderBy(a => a.ID)
                 .ToArray();
 
-            AttributesMap = new Dictionary<int, D3Attribute>(Attributes.Length);
+            AttributesMap = new Dictionary<uint, D3Attribute>(Attributes.Length);
             foreach (D3Attribute attribute in Attributes)
-                AttributesMap.Add(attribute.ID, attribute);
+                AttributesMap.Add((uint)attribute.ID, attribute);
         }
 
         public static readonly D3AttributeI Axe_Bad_Data = new D3AttributeI(0, 0, -1, 0, 0, "", "", "Axe_Bad_Data", D3AttributeEncoding.Int, 0, 0, 0, 32);

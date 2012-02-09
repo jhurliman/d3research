@@ -13,6 +13,11 @@ namespace libdiablo3.Process
             attributes = new Dictionary<uint, D3AttributeValue>();
         }
 
+        public D3AttributeMap(int capacity)
+        {
+            attributes = new Dictionary<uint, D3AttributeValue>(capacity);
+        }
+
         public bool TryGetValue(D3Attribute attribute, out D3AttributeValue value)
         {
             return attributes.TryGetValue(GetID(attribute), out value);
