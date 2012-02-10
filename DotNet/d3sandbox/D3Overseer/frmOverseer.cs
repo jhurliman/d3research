@@ -31,6 +31,8 @@ namespace D3Overseer
         private RateTracker goldRate = new RateTracker(TimeSpan.FromHours(1.0));
         private RateTracker xpRate = new RateTracker(TimeSpan.FromHours(1.0));
 
+        private volatile bool controlUpdateRunning;
+
         #region Map Members
 
         private Bitmap stageBitmap;
@@ -185,13 +187,18 @@ namespace D3Overseer
 
         private void UpdateControls()
         {
+            if (controlUpdateRunning)
+                return;
+
             try
             {
                 if (this.InvokeRequired)
                 {
-                    this.Invoke(new UpdateControlsCallback(UpdateControls));
+                    this.BeginInvoke(new MethodInvoker(UpdateControls));
                     return;
                 }
+
+                controlUpdateRunning = true;
 
                 if (world.Scenes == null && world.Me == null)
                     lblAttached.Text = "No";
@@ -261,7 +268,10 @@ namespace D3Overseer
                 if (world.Scenes != null)
                     UpdateMap();
             }
-            catch { }
+            finally
+            {
+                controlUpdateRunning = false;
+            }
         }
 
         #region Map Rendering

@@ -268,12 +268,34 @@ namespace libdiablo3.Process
             uint p0 = ReadUInt(v0 + 8);
             int capacity = ReadInt(v0 + Offsets.ATTRIB_SLOTCOUNT_OFFSET);
             int count = ReadInt(v0 + Offsets.ATTRIB_COUNT_OFFSET);
-
             D3AttributeMap attributes = new D3AttributeMap(count);
-
             uint basePtr;
             uint ptr;
+            byte[] attribData;
+            uint attribID;
+
+            #region TeamID-only Optimization
+
+            if (count == 1)
+            {
+                ptr = ReadUInt(p0 + 0x29C);
+                if (ptr != 0)
+                {
+                    attribData = ReadBytes(ptr + 4, 8);
+                    attribID = BitConverter.ToUInt32(attribData, 0);
+
+                    if ((attribID & 0xFFF) == D3Attribute.TeamID.ID)
+                    {
+                        attributes[D3Attribute.TeamID] = new D3AttributeValue(BitConverter.ToInt32(attribData, 4));
+                        return attributes;
+                    }
+                }
+            }
+
+            #endregion TeamID-only Optimization
+
             byte[] data = ReadBytes(p0, 4 * capacity);
+            int curCount = 0;
 
             unsafe
             {
@@ -284,22 +306,24 @@ namespace libdiablo3.Process
                     for (int i = 0; i < capacity; i++)
                     {
                         basePtr = *(ptrs + i);
-                        if (basePtr != 0 && basePtr != Offsets.INVALID)
+                        if (basePtr != 0)
                         {
                             ptr = basePtr;
                             while (ptr != 0)
                             {
-                                byte[] attribData = ReadBytes(ptr, 12);
+                                attribData = ReadBytes(ptr, 12);
                                 ptr = BitConverter.ToUInt32(attribData, 0);
-                                uint attribID = BitConverter.ToUInt32(attribData, 4);
+                                attribID = BitConverter.ToUInt32(attribData, 4);
 
                                 if (attribID != Offsets.INVALID)
                                 {
                                     D3Attribute attrib = D3Attribute.AttributesMap[attribID & 0xFFF];
-                                    if (attrib.IsInteger)
-                                        attributes[attribID] = new D3AttributeValue(BitConverter.ToInt32(attribData, 8));
-                                    else
-                                        attributes[attribID] = new D3AttributeValue(BitConverter.ToSingle(attribData, 8));
+                                    attributes[attribID] = (attrib.IsInteger)
+                                        ? new D3AttributeValue(BitConverter.ToInt32(attribData, 8))
+                                        : new D3AttributeValue(BitConverter.ToSingle(attribData, 8));
+
+                                    if (++curCount == count)
+                                        return attributes;
                                 }
                             }
                         }
