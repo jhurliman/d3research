@@ -153,6 +153,18 @@ namespace libdiablo3.Api
             world.Update();
         }
 
+        /// <summary>
+        /// Press a button in the Diablo III user interface
+        /// </summary>
+        /// <param name="uiObj">Button to press</param>
+        public void PressButton(UIObject uiObj)
+        {
+            if (uiObj.Type != UIType.Button)
+                throw new ArgumentException("Can only press buttons");
+
+            injector.PressButton(uiObj.Pointer);
+        }
+
         private void LogMessageCallback(LogLevel level, string message, Exception ex)
         {
             LogHandler handler = OnLogMessage;

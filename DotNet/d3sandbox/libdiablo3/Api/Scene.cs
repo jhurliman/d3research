@@ -19,6 +19,8 @@ namespace libdiablo3.Api
         public readonly NavCell[] NavCells;
         /// <summary>Bounding box for this scene</summary>
         public readonly AABB BoundingBox;
+        /// <summary></summary>
+        public readonly List<Actor> Actors;
 
         public Scene(string name, bool active, uint sceneID, uint worldID, int snoID, Vector3f position)
         {
@@ -37,6 +39,8 @@ namespace libdiablo3.Api
                 if (aabb.Max.Y > BoundingBox.Max.Y) BoundingBox.Max.Y = aabb.Max.Y;
                 if (aabb.Max.Z > BoundingBox.Max.Z) BoundingBox.Max.Z = aabb.Max.Z;
             }
+
+            this.Actors = new List<Actor>();
         }
     }
 }

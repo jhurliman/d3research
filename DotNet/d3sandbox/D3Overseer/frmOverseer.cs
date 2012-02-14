@@ -58,7 +58,7 @@ namespace D3Overseer
         {
             InitializeComponent();
 
-            // FIXME: Check for elevated privileges and relaunch if we don't have them
+            // TODO: Check for elevated privileges and relaunch if we don't have them
 
             this.DoubleBuffered = true;
 
@@ -179,6 +179,10 @@ namespace D3Overseer
 
                 int sleepMS = Math.Max(100 - (int)Math.Round(totalMS), 0);
                 Thread.Sleep(sleepMS);
+
+                // Check if the WinForms elements are still updating. If so, wait for the update to finish
+                while (controlUpdateRunning)
+                    Thread.Sleep(1);
             }
 
             Log(LogLevel.Info, "Shutting down...");
@@ -267,6 +271,10 @@ namespace D3Overseer
 
                 if (world.Scenes != null)
                     UpdateMap();
+
+                UIObject rootUIObj = world.RootUIObject;
+                if (rootUIObj != null)
+                    UpdateUI(rootUIObj);
             }
             finally
             {
@@ -514,6 +522,40 @@ namespace D3Overseer
 
         #endregion Inventory Rendering
 
+        private void UpdateUI(UIObject rootUIObj)
+        {
+            if (treeUI.Nodes.Count == 0)
+                treeUI.Nodes.Add(CreateNode(rootUIObj));
+        }
+
+        private TreeNode CreateNode(UIObject uiObj)
+        {
+            string nodeTitle = uiObj.Type + " - ";
+            if (uiObj.Parent != null && uiObj.Name.StartsWith(uiObj.Parent.Name))
+                nodeTitle += uiObj.Name.Substring(uiObj.Parent.Name.Length + 1);
+            else
+                nodeTitle += uiObj.Name;
+
+            TreeNode node = new TreeNode(nodeTitle);
+            node.Tag = uiObj.ID;
+            node.ForeColor = (uiObj.Visible) ? Color.Black : Color.Gray;
+
+            for (int i = 0; i < uiObj.Children.Count; i++)
+                node.Nodes.Add(CreateNode(uiObj.Children[i]));
+
+            return node;
+        }
+
+        private static Scene GetContainingScene(Scene[] scenes, Vector2f point)
+        {
+            for (int i = 0; i < scenes.Length; i++)
+            {
+                if (scenes[i].BoundingBox.IsWithin(point))
+                    return scenes[i];
+            }
+            return null;
+        }
+
         private void LogMessageCallback(LogLevel level, string message, Exception ex)
         {
             if (ex != null)
@@ -528,37 +570,58 @@ namespace D3Overseer
 
         private void picMap_MouseUp(object sender, MouseEventArgs e)
         {
+            if (world == null) return;
             Scene[] scenes = world.Scenes;
-            if (scenes == null)
-                return;
+            if (scenes == null) return;
 
             Vector2f clickPos = new Vector2f(e.X, e.Y);
+            Scene scene = GetContainingScene(scenes, clickPos);
+            if (scene == null)
+                return;
 
-            foreach (Scene scene in scenes)
+            Actor closestActor = world.GetClosestActor(clickPos);
+            Vector3f closestActorPos = closestActor.Position;
+            float dist = Vector2f.Distance(new Vector2f(closestActorPos.X, closestActorPos.Y), clickPos);
+            if (dist < 6f)
             {
-                if (!scene.BoundingBox.IsWithin(clickPos))
+                switch (closestActor.Category)
+                {
+                    case ActorCategory.Gizmo:
+                        world.Me.UsePower(PowerName.Axe_Operate_Gizmo, closestActor);
+                        return;
+                    case ActorCategory.Item:
+                        if (closestActor.Type == ActorName.GoldCoin)
+                            world.Me.UsePower(PowerName.Walk, closestActor.Position);
+                        else
+                            world.Me.UsePower(PowerName.PickupNearby, closestActor);
+                        return;
+                    case ActorCategory.Monster:
+                        if (closestActor is NPC)
+                            world.Me.UsePower(PowerName.Axe_Operate_NPC, closestActor);
+                        else
+                            world.Me.UsePower(PowerName.Punch, closestActor);
+                        return;
+                }
+            }
+
+            Vector2f relClickPos = new Vector2f(
+                clickPos.X - scene.BoundingBox.Min.X,
+                clickPos.Y - scene.BoundingBox.Min.Y);
+
+            for (int i = 0; i < scene.NavCells.Length; i++)
+            {
+                NavCell cell = scene.NavCells[i];
+                if (!cell.BoundingBox.IsWithin(relClickPos))
                     continue;
 
-                Vector2f relClickPos = new Vector2f(
-                    clickPos.X - scene.BoundingBox.Min.X,
-                    clickPos.Y - scene.BoundingBox.Min.Y);
-
-                for (int i = 0; i < scene.NavCells.Length; i++)
+                if (cell.Flags.HasFlag(NavCellFlags.AllowWalk))
                 {
-                    NavCell cell = scene.NavCells[i];
-                    
-                    if (!cell.BoundingBox.IsWithin(relClickPos))
-                        continue;
-
-                    if (cell.Flags.HasFlag(NavCellFlags.AllowWalk))
-                    {
-                        Vector3f dest = new Vector3f(clickPos.X, clickPos.Y, cell.BoundingBox.Center.Z);
-                        //bool direct = AI.IsDirectPath(world, world.Me.Position, dest);
-                        world.Me.UsePower(PowerName.Walk, dest);
-                    }
-
-                    return;
+                    Vector3f dest = new Vector3f(clickPos.X, clickPos.Y, cell.BoundingBox.Center.Z);
+                    //bool direct = AI.IsDirectPath(world, world.Me.Position, dest);
+                    world.Me.UsePower(PowerName.Walk, dest);
                 }
+
+                return;
             }
         }
 
@@ -597,6 +660,18 @@ namespace D3Overseer
 
             e.Graphics.DrawRectangle(selectionPen, x, y, width, height);
             donePaintingPreview = true;
+        }
+
+        private void cmdUIInteract_Click(object sender, EventArgs e)
+        {
+            TreeNode selected = treeUI.SelectedNode;
+            if (selected == null)
+                return;
+
+            int uiID = (int)selected.Tag;
+            UIObject uiObj = world.UIObjects[uiID];
+
+            d3Api.PressButton(uiObj);
         }
     }
 }

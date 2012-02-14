@@ -112,13 +112,14 @@ namespace d3codegen
                 itemWriter.WriteLine("{");
                 itemWriter.WriteLine("    public static class ItemDefinitions");
                 itemWriter.WriteLine("    {");
-                itemWriter.WriteLine("        public static readonly Dictionary<int, int> Definitions = new Dictionary<int, int>");
+                itemWriter.WriteLine("        public static readonly Dictionary<int, ItemDefinition> Definitions = new Dictionary<int, ItemDefinition>");
                 itemWriter.WriteLine("        {");
 
                 foreach (KeyValuePair<int, ItemTable> kvp in items)
                 {
                     ItemTable item = kvp.Value;
-                    itemWriter.WriteLine("            {{ {0}, {1} }},", kvp.Key, item.ItemType1);
+                    itemWriter.WriteLine("            {{ {0}, new ItemDefinition({1}, {2}, {3}, {4}, {5}, {6}, {7}) }},", kvp.Key,
+                        (int)item.Quality, item.ItemLevel, item.RequiredLevel, item.BaseGoldValue, item.MaxSockets, item.MaxStackAmount, item.ItemType1);
                 }
 
                 itemWriter.WriteLine("        };");

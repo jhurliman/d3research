@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace libdiablo3.AI
+namespace libdiablo3
 {
-    public class PriorityQueueB<T>
+    internal class PriorityQueueB<T>
     {
         private int count;
         private int capacity;

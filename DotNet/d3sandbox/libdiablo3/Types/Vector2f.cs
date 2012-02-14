@@ -56,6 +56,27 @@ namespace libdiablo3
 
         #endregion Public Fields
 
+        public float this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case 0: return X;
+                    case 1: return Y;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+            set
+            {
+                switch (index)
+                {
+                    case 0: X = value; break;
+                    case 1: Y = value; break;
+                    default: throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
 
         #region Properties
 
@@ -208,6 +229,10 @@ namespace libdiablo3
             return (float)Math.Sqrt((value1.X - value2.X) * (value1.X - value2.X) + (value1.Y - value2.Y) * (value1.Y - value2.Y));
         }
 
+        public static float Distance(Vector2f value1, Vector3f value2)
+        {
+            return (float)Math.Sqrt((value1.X - value2.X) * (value1.X - value2.X) + (value1.Y - value2.Y) * (value1.Y - value2.Y));
+        }
 
         public static void Distance(ref Vector2f value1, ref Vector2f value2, out float result)
         {
@@ -215,6 +240,11 @@ namespace libdiablo3
         }
 
         public static float DistanceSquared(Vector2f value1, Vector2f value2)
+        {
+            return (value1.X - value2.X) * (value1.X - value2.X) + (value1.Y - value2.Y) * (value1.Y - value2.Y);
+        }
+
+        public static float DistanceSquared(Vector2f value1, Vector3f value2)
         {
             return (value1.X - value2.X) * (value1.X - value2.X) + (value1.Y - value2.Y) * (value1.Y - value2.Y);
         }

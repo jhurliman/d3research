@@ -27,7 +27,7 @@ namespace Mooege.Common.MPQ
     public static class MPQStorage
     {
         private static readonly Logger Logger = LogManager.CreateLogger();
-        private readonly static string MpqRoot = "C:\\Program Files (x86)\\Diablo III Beta\\Data_D3\\PC\\MPQs";
+        private readonly static string MpqRoot = "C:\\Program Files\\Diablo III Beta\\Data_D3\\PC\\MPQs";
 
         public static List<string> MPQList { get; private set; }
         public static Data Data { get; private set; }

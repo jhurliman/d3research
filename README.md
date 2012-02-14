@@ -44,13 +44,11 @@ but do not trust the data coming from the server emulator as canonical.
 * Inventory enumeration
 * Create an API for AI
 * Enumerate navcells in scenes and build a navigation map
-* Path-finding through worlds
 
 ## TODO ##
 
-* Determine item value
-* Use town portals and waypoints
+* AI helpers for starting a task, measuring progress, testing for completion, and abandoning on success/failure
+* A*-assisted navigation
 * Implement class AI
 * Sell inventory items to NPCs
-* Consistent 100ms tick
 * EndScene mid-function hook

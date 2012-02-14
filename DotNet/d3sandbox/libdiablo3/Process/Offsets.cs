@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using libdiablo3.Api;
 
 namespace libdiablo3.Process
 {
@@ -39,6 +41,7 @@ namespace libdiablo3.Process
         public const uint PLAYER_OFFSET3 = 0x58;
 
         public const uint METHOD_USEPOWER = 0x009426A0;
+        public const uint METHOD_PRESSBUTTON = 0x00AFCBF0;
 
         /// <summary>Global pointer to the object manager, an object pointing
         /// to many important containers</summary>
@@ -57,9 +60,12 @@ namespace libdiablo3.Process
         public const uint TLS_ATTRIBUTES_OFFSET2 = 0x70;
         public const uint TLS_ACD_OFFSET = 0xD4;
 
-        public const uint UI_1_OFFSET = 0x20C;
+        public const int UI_ROOT_ID = -2;
+        public const uint UI_ARRAY_PTR_OFFSET = 0x8;
+        public const uint UI_ARRAY_CAPACITY_OFFSET = 0x10;
+        public const uint UI_ARRAY_SIZE_OFFSET = 0x44;
+        public const uint UI_OBJ_PTR_OFFSET = 0x20C;
         public const uint UI_2_OFFSET = 0x20;
-        public const uint UI_3_OFFSET = 0x20C;
         public const uint UI_TEXTBOX_STR = 0xA28;
         public const uint UI_TEXTBOX_LENGTH = 0xA38;
 
@@ -70,5 +76,46 @@ namespace libdiablo3.Process
         public const uint D3DMANAGER_ADAPTER_OFFSET = 0x4A4;
         public const uint D3DMANAGER_DEVICE_OFFSET = 0x4A8;
         public const uint D3D_DEVICE_ENDSCENE_OFFSET = 0xA8;
+
+        public static readonly Dictionary<uint, UIType> UI_VTABLES = new Dictionary<uint, UIType>
+        {
+            { 0x00000000, UIType.None },
+            { 0x0125dc68, UIType.Label },
+            { 0x0128c720, UIType.Panel },
+            { 0x01291260, UIType.Button },
+            { 0x012a5358, UIType.HotkeyBind },
+            { 0x012917d8, UIType.TabButton },
+            { 0x012a1c60, UIType.ItemButton },
+            { 0x012a3580, UIType.ScrollBar },
+            { 0x012a55f8, UIType.ScrollBarThumb },
+            { 0x012a3d40, UIType.CheckBox },
+            { 0x0128c8e8, UIType.ComboBox },
+            { 0x01291870, UIType.RadioButtonGroup },
+            { 0x0128def8, UIType.EditBox },
+            { 0x012a5980, UIType.Hotkey },
+            { 0x0128fd08, UIType.Transition },
+            { 0x012a3de0, UIType.List },
+            { 0x012a4f58, UIType.ImageList },
+            { 0x012a41C8, UIType.StackPanel },
+            { 0x012a4140, UIType.Blinker },
+            { 0x012a40a0, UIType.ProgressBar },
+            { 0x01260be0, UIType.Tooltip },
+            { 0x0129f670, UIType.ConsoleOutput },
+            { 0x012a5800, UIType.DrawHook },
+            { 0x012a3cb8, UIType.ChatMessageList },
+            { 0x0128df88, UIType.ChatEditBox },
+            { 0x0128e018, UIType.ConsoleEditBox },
+            { 0x012a5860, UIType.Tutorial },
+            { 0x012a28b8, UIType.Timer },
+            { 0x012912f8, UIType.ItemTag },
+            { 0x012a3eb8, UIType.SkillIcon },
+            { 0x012a3f68, UIType.ListBoxFolder },
+            { 0x012a5690, UIType.FloatBubble },
+            { 0x012a3ff0, UIType.DialogTree },
+            { 0x0128eff0, UIType.Map },
+            { 0x012a3928, UIType.DialogText },
+            { 0x012a4878, UIType.Globe },
+            { 0x012a5540, UIType.Recipe },
+        };
     }
 }

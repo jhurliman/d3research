@@ -67,6 +67,9 @@
             this.picPreview = new System.Windows.Forms.PictureBox();
             this.tabInventory = new System.Windows.Forms.TabPage();
             this.picBackpack = new System.Windows.Forms.PictureBox();
+            this.tabUI = new System.Windows.Forms.TabPage();
+            this.treeUI = new System.Windows.Forms.TreeView();
+            this.cmdUIInteract = new System.Windows.Forms.Button();
             this.progRes2 = new D3Overseer.ProgressBarEx();
             this.progRes1 = new D3Overseer.ProgressBarEx();
             this.progHealth = new D3Overseer.ProgressBarEx();
@@ -79,6 +82,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.picPreview)).BeginInit();
             this.tabInventory.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBackpack)).BeginInit();
+            this.tabUI.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -422,6 +426,7 @@
             // 
             this.tabs.Controls.Add(this.tabMap);
             this.tabs.Controls.Add(this.tabInventory);
+            this.tabs.Controls.Add(this.tabUI);
             this.tabs.Location = new System.Drawing.Point(395, 19);
             this.tabs.Name = "tabs";
             this.tabs.SelectedIndex = 0;
@@ -494,6 +499,34 @@
             this.picBackpack.TabIndex = 0;
             this.picBackpack.TabStop = false;
             // 
+            // tabUI
+            // 
+            this.tabUI.Controls.Add(this.cmdUIInteract);
+            this.tabUI.Controls.Add(this.treeUI);
+            this.tabUI.Location = new System.Drawing.Point(4, 22);
+            this.tabUI.Name = "tabUI";
+            this.tabUI.Size = new System.Drawing.Size(422, 572);
+            this.tabUI.TabIndex = 2;
+            this.tabUI.Text = "UI";
+            this.tabUI.UseVisualStyleBackColor = true;
+            // 
+            // treeUI
+            // 
+            this.treeUI.Location = new System.Drawing.Point(9, 12);
+            this.treeUI.Name = "treeUI";
+            this.treeUI.Size = new System.Drawing.Size(404, 512);
+            this.treeUI.TabIndex = 0;
+            // 
+            // cmdUIInteract
+            // 
+            this.cmdUIInteract.Location = new System.Drawing.Point(9, 530);
+            this.cmdUIInteract.Name = "cmdUIInteract";
+            this.cmdUIInteract.Size = new System.Drawing.Size(100, 29);
+            this.cmdUIInteract.TabIndex = 1;
+            this.cmdUIInteract.Text = "Press Me";
+            this.cmdUIInteract.UseVisualStyleBackColor = true;
+            this.cmdUIInteract.Click += new System.EventHandler(this.cmdUIInteract_Click);
+            // 
             // progRes2
             // 
             this.progRes2.Location = new System.Drawing.Point(167, 90);
@@ -544,6 +577,7 @@
             this.tabInventory.ResumeLayout(false);
             this.tabInventory.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picBackpack)).EndInit();
+            this.tabUI.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -591,6 +625,9 @@
         private System.Windows.Forms.PictureBox picBackpack;
         private System.Windows.Forms.Label lblLevel;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.TabPage tabUI;
+        private System.Windows.Forms.TreeView treeUI;
+        private System.Windows.Forms.Button cmdUIInteract;
     }
 }
 

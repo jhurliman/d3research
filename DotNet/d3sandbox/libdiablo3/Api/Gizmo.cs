@@ -16,13 +16,15 @@ namespace libdiablo3.Api
         }
 
         internal static Gizmo CreateInstance(Gizmo template, int instanceID, int acdID, AABB aabb,
-            Vector2f direction)
+            Vector2f direction, uint worldID, uint sceneID)
         {
             Gizmo gizmo = template.MemberwiseClone() as Gizmo;
             gizmo.InstanceID = instanceID;
             gizmo.AcdID = acdID;
             gizmo.BoundingBox = aabb;
             gizmo.Direction = direction;
+            gizmo.WorldID = worldID;
+            gizmo.SceneID = sceneID;
             return gizmo;
         }
     }

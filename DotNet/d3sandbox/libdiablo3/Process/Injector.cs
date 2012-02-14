@@ -44,6 +44,17 @@ namespace libdiablo3.Process
                 Thread.Sleep(1);
         }
 
+        public void PressButton(uint buttonPtr)
+        {
+            uint flagAddress = GetAddress("PressButton_Flag");
+
+            d3.WriteUInt(GetAddress("PressButton_Ptr"), buttonPtr);
+            d3.WriteInt(flagAddress, 1);
+
+            while (d3.ReadInt(flagAddress) == 1)
+                Thread.Sleep(1);
+        }
+
         private void InstallHook()
         {
             #region Inject New Method
@@ -63,6 +74,7 @@ namespace libdiablo3.Process
                 "pushad",
 
                 "call " + InstallUsePower(),
+                "call " + InstallPressButton(),
 
                 // Restore FPU and general purpose registers
                 "@out:",
@@ -133,6 +145,44 @@ namespace libdiablo3.Process
 
             byte[] compiled = fasm.Assemble();
             uint address = AllocateMemory("UsePower", compiled.Length);
+            fasm.Inject(address);
+            fasm.Clear();
+
+            return address;
+        }
+
+        private uint InstallPressButton()
+        {
+            ManagedFasm fasm = new ManagedFasm(d3.ProcessHandle);
+            fasm.SetMemorySize(0x4096); // Allocate 16KB of memory
+
+            AllocateMemory("PressButton_Ptr", 4);
+            AllocateMemory("PressButton_Flag", 4);
+
+            string[] asm = new string[]
+            {
+                "mov edx, [" + GetAddress("PressButton_Flag") + "]",
+                "cmp edx, 1",
+                "jne @out",
+
+                "push 25h",
+                "mov ecx, [" + GetAddress("PressButton_Ptr") + "]",
+                "call " + Offsets.METHOD_PRESSBUTTON,
+
+                "@reset:",
+                "mov ebp, " + GetAddress("PressButton_Flag"),
+                "mov edx, 0",
+                "mov [ebp], edx",
+
+                "@out:",
+                "retn"
+            };
+
+            foreach (string line in RandomizeAsm(asm))
+                fasm.AddLine(line);
+
+            byte[] compiled = fasm.Assemble();
+            uint address = AllocateMemory("PressButton", compiled.Length);
             fasm.Inject(address);
             fasm.Clear();
 

@@ -15,14 +15,17 @@ namespace libdiablo3.Api
         public AABB BoundingBox;
         public Vector2f Direction;
 
+        public uint WorldID { get; internal set; }
+        public uint SceneID { get; internal set; }
+
+        public Vector3f Position { get { return BoundingBox.Center; } }
+
         internal Actor(int snoID, int category, int team)
         {
             Type = (ActorName)snoID;
             Category = (ActorCategory)category;
             Team = (TeamType)team;
         }
-
-        public Vector3f Position { get { return BoundingBox.Center; } }
 
         public override int GetHashCode()
         {
@@ -62,13 +65,15 @@ namespace libdiablo3.Api
         }
 
         internal static Actor CreateInstance(Actor template, int instanceID, int acdID, AABB aabb,
-            Vector2f direction)
+            Vector2f direction, uint worldID, uint sceneID)
         {
             Actor actor = template.MemberwiseClone() as Actor;
             actor.InstanceID = instanceID;
             actor.AcdID = acdID;
             actor.BoundingBox = aabb;
             actor.Direction = direction;
+            actor.WorldID = worldID;
+            actor.SceneID = sceneID;
             return actor;
         }
     }

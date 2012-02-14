@@ -88,7 +88,6 @@ namespace libdiablo3.Api
 
         public readonly SkillSlots SkillSlots;
         public readonly PlayerOutfit Outfit;
-        public readonly uint WorldID;
         
         public Backpack Backpack { get; internal set; }
         public Stash Stash { get; internal set; }
@@ -115,7 +114,7 @@ namespace libdiablo3.Api
             }
         }
 
-        public Player(Injector injector, uint actorPtr, uint acdPtr, int snoID, uint worldID)
+        public Player(Injector injector, uint actorPtr, uint acdPtr, int snoID, uint worldID, uint sceneID)
             : base(snoID)
         {
             Injector = injector;
@@ -124,6 +123,7 @@ namespace libdiablo3.Api
             SkillSlots = new SkillSlots();
             Outfit = new PlayerOutfit();
             WorldID = worldID;
+            SceneID = sceneID;
 
             PrimaryResourceType = ResourceType.None;
             SecondaryResourceType = ResourceType.None;
@@ -140,9 +140,10 @@ namespace libdiablo3.Api
         }
 
         internal static Player CreateInstance(Injector injector, uint actorPtr, uint acdPtr,
-            int snoID, int instanceID, int acdID, AABB aabb, Vector2f direction, uint worldID)
+            int snoID, int instanceID, int acdID, AABB aabb, Vector2f direction, uint worldID,
+            uint sceneID)
         {
-            Player player = new Player(injector, actorPtr, acdPtr, snoID, worldID);
+            Player player = new Player(injector, actorPtr, acdPtr, snoID, worldID, sceneID);
             player.InstanceID = instanceID;
             player.AcdID = acdID;
             player.BoundingBox = aabb;

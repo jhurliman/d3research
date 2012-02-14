@@ -68,6 +68,41 @@ namespace libdiablo3
             return true; // Intersects if above fails
         }
 
+        public static float DistanceSquared(AABB aabb, Vector3f point)
+        {
+            float sqDist = 0f;
+
+            for (int i = 0; i < 3; i++)
+            {
+                // For each axis count any excess distance outside box contents
+                float v = point[i];
+                if (v < aabb.Min[i]) sqDist += (aabb.Min[i] - v) * (aabb.Min[i] - v);
+                if (v > aabb.Max[i]) sqDist += (v - aabb.Max[i]) * (v - aabb.Max[i]);
+            }
+
+            return sqDist;
+        }
+
+        public static float DistanceSquared(AABB aabb, Vector2f point)
+        {
+            float sqDist = 0f;
+
+            for (int i = 0; i < 2; i++)
+            {
+                // For each axis count any excess distance outside box contents
+                float v = point[i];
+                if (v < aabb.Min[i]) sqDist += (aabb.Min[i] - v) * (aabb.Min[i] - v);
+                if (v > aabb.Max[i]) sqDist += (v - aabb.Max[i]) * (v - aabb.Max[i]);
+            }
+
+            return sqDist;
+        }
+
+        public static float Distance(AABB aabb, Vector3f point)
+        {
+            return (float)Math.Sqrt(DistanceSquared(aabb, point));
+        }
+
         public override string ToString()
         {
             return string.Format("AABB: min:{0} max:{1}", this.Min, this.Max);

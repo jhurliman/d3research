@@ -5,12 +5,14 @@ using libdiablo3.Process;
 
 namespace libdiablo3.Api
 {
+    // FIXME: Rename World to Game or Client, "World" has a specific meaning in D3
     public class World
     {
         private MemoryReader memReader;
         private Injector injector;
         private WorldActorEnumerator enumerator;
         private uint scenesCRC;
+        private Dictionary<int, UIObject> uiObjects;
 
         public Player Me { get; internal set; }
         public Scene[] Scenes { get; internal set; }
@@ -24,6 +26,19 @@ namespace libdiablo3.Api
         public AABB BoundingBox { get; internal set; }
         public uint ScenesCRC { get { return scenesCRC; } }
         public IEnumerable<Actor> AllActors { get { return enumerator; } }
+        public IDictionary<int, UIObject> UIObjects { get { return uiObjects; } }
+        
+        public UIObject RootUIObject
+        {
+            get
+            {
+                Dictionary<int, UIObject> objs = this.uiObjects;
+                if (objs == null) return null;
+                UIObject root;
+                objs.TryGetValue(Offsets.UI_ROOT_ID, out root);
+                return root;
+            }
+        }
 
         internal World(MemoryReader memReader, Injector injector)
         {
@@ -32,23 +47,124 @@ namespace libdiablo3.Api
             this.enumerator = new WorldActorEnumerator(this);
         }
 
-        public Actor GetClosestWaypoint()
+        #region GetClosestActor
+
+        public Actor GetClosestActor()
         {
-            // FIXME:
-            return null;
+            return GetClosestActor(this.Me.Position, ActorCategory.Invalid);
         }
 
-        public Monster GetClosestMonster()
+        public Actor GetClosestActor(Vector3f origin)
         {
-            // FIXME:
-            return null;
+            return GetClosestActor(origin, ActorCategory.Invalid);
         }
+
+        public Actor GetClosestActor(ActorCategory category)
+        {
+            return GetClosestActor(this.Me.Position, category);
+        }
+
+        public Actor GetClosestActor(Vector3f origin, ActorCategory category)
+        {
+            const float SEARCH_RADIUS_SQ = 50.0f * 50.0f;
+
+            Actor closestActor = null;
+            float closestSqDist = Single.MaxValue;
+
+            // Find scenes near the actor
+            for (int i = 0; i < this.Scenes.Length; i++)
+            {
+                Scene scene = this.Scenes[i];
+                if (AABB.DistanceSquared(scene.BoundingBox, origin) <= SEARCH_RADIUS_SQ)
+                {
+                    // Check distance for all actors in the this scene
+                    for (int j = 0; j < scene.Actors.Count; j++)
+                    {
+                        Actor actor = scene.Actors[j];
+                        if (actor.AcdID == this.Me.AcdID || actor.Category == ActorCategory.ServerProp)
+                            continue;
+
+                        if (category == ActorCategory.Invalid || category == actor.Category)
+                        {
+                            float sqDist = Vector3f.DistanceSquared(origin, actor.Position);
+                            if (sqDist < closestSqDist)
+                            {
+                                closestActor = actor;
+                                closestSqDist = sqDist;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return closestActor;
+        }
+
+        public Actor GetClosestActor(Vector2f origin)
+        {
+            return GetClosestActor(origin, ActorCategory.Invalid);
+        }
+
+        public Actor GetClosestActor(Vector2f origin, ActorCategory category)
+        {
+            const float SEARCH_RADIUS_SQ = 50.0f * 50.0f;
+
+            Actor closestActor = null;
+            float closestSqDist = Single.MaxValue;
+
+            // Find scenes near the actor
+            for (int i = 0; i < this.Scenes.Length; i++)
+            {
+                Scene scene = this.Scenes[i];
+                if (AABB.DistanceSquared(scene.BoundingBox, origin) <= SEARCH_RADIUS_SQ)
+                {
+                    // Check distance for all actors in the this scene
+                    for (int j = 0; j < scene.Actors.Count; j++)
+                    {
+                        Actor actor = scene.Actors[j];
+                        if (actor.AcdID == this.Me.AcdID || actor.Category == ActorCategory.ServerProp)
+                            continue;
+
+                        if (category == ActorCategory.Invalid || category == actor.Category)
+                        {
+                            float sqDist = Vector2f.DistanceSquared(origin, actor.Position);
+                            if (sqDist < closestSqDist)
+                            {
+                                closestActor = actor;
+                                closestSqDist = sqDist;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return closestActor;
+        }
+
+        #endregion GetClosestActor
 
         internal void Update()
         {
             UpdatePlayer();
             UpdateActors();
             UpdateScenes();
+
+            // Place actors in scenes
+            foreach (Scene scene in this.Scenes)
+                scene.Actors.Clear();
+            foreach (Actor actor in this.AllActors)
+            {
+                for (int i = 0; i < this.Scenes.Length; i++)
+                {
+                    if (this.Scenes[i].SceneID == actor.SceneID)
+                    {
+                        this.Scenes[i].Actors.Add(actor);
+                        break;
+                    }
+                }
+            }
+
+            UpdateUI();
         }
 
         private void UpdatePlayer()
@@ -58,7 +174,8 @@ namespace libdiablo3.Api
             {
                 this.Me = Player.CreateInstance(this.injector, d3Player.Pointer, d3Player.Acd.Pointer,
                     d3Player.SnoID, (int)d3Player.ActorID, (int)d3Player.AcdID,
-                    new AABB(d3Player.Pos1, d3Player.Pos2), d3Player.Direction, d3Player.WorldID);
+                    new AABB(d3Player.Pos1, d3Player.Pos2), d3Player.Direction, d3Player.WorldID,
+                    d3Player.Acd.SceneID);
 
                 this.Me.SkillSlots.UpdateSkills(memReader.GetActiveSkills());
 
@@ -129,25 +246,28 @@ namespace libdiablo3.Api
 
                 if (templateActor is Gizmo)
                 {
-                    Gizmo gizmo = Gizmo.CreateInstance((Gizmo)templateActor, acdID, acdID, aabb, direction);
+                    Gizmo gizmo = Gizmo.CreateInstance((Gizmo)templateActor, acdID, acdID, aabb, direction, d3ACD.WorldID,
+                        d3ACD.SceneID);
                     gizmos.Add(gizmo);
                 }
                 else if (templateActor is Hero)
                 {
                     if (this.Me == null || acdID != this.Me.AcdID)
                     {
-                        Hero hero = Hero.CreateInstance((Hero)templateActor, acdID, acdID, aabb, direction);
+                        Hero hero = Hero.CreateInstance((Hero)templateActor, acdID, acdID, aabb, direction, d3ACD.WorldID,
+                            d3ACD.SceneID);
                         heros.Add(hero);
                     }
                 }
                 else if (templateActor is Item)
                 {
-                    int itemTypeHash;
-                    if (!ItemDefinitions.Definitions.TryGetValue((int)d3ACD.GBID, out itemTypeHash))
+                    ItemDefinition itemDef;
+                    if (!ItemDefinitions.Definitions.TryGetValue((int)d3ACD.GBID, out itemDef))
                         throw new MemoryReadException("Unrecognized GBID", d3ACD.GBID);
 
-                    ItemType type = ItemTypes.Types[itemTypeHash];
-                    Item item = Item.CreateInstance((Item)templateActor, acdID, acdID, aabb, direction, type, -1, 0, 0);
+                    ItemType type = ItemTypes.Types[itemDef.ItemTypeHash];
+                    Item item = Item.CreateInstance((Item)templateActor, itemDef, acdID, acdID, aabb, direction, d3ACD.WorldID,
+                        d3ACD.SceneID, type, -1, 0, 0);
                     items.Add(item);
                 }
                 else if (templateActor is Monster)
@@ -157,8 +277,8 @@ namespace libdiablo3.Api
                     float hpCur = d3ACD.Attributes[D3Attribute.Hitpoints_Cur].ValueF;
                     float hpMax = d3ACD.Attributes[D3Attribute.Hitpoints_Max].Value;
 
-                    Monster monster = Monster.CreateInstance((Monster)templateActor, acdID, acdID, aabb, direction, level,
-                        xpGranted, hpCur, hpMax);
+                    Monster monster = Monster.CreateInstance((Monster)templateActor, acdID, acdID, aabb, direction,
+                        d3ACD.WorldID, d3ACD.SceneID, level, xpGranted, hpCur, hpMax);
                     monsters.Add(monster);
                 }
                 else if (templateActor is NPC)
@@ -168,13 +288,13 @@ namespace libdiablo3.Api
                     int hpCur = 0;
                     int hpMax = 0;
 
-                    NPC npc = NPC.CreateInstance((NPC)templateActor, acdID, acdID, aabb, direction, isOperatable,
-                        level, hpCur, hpMax);
+                    NPC npc = NPC.CreateInstance((NPC)templateActor, acdID, acdID, aabb, direction, d3ACD.WorldID, d3ACD.SceneID,
+                        isOperatable, level, hpCur, hpMax);
                     npcs.Add(npc.InstanceID, npc);
                 }
                 else
                 {
-                    Actor actor = Actor.CreateInstance(templateActor, acdID, acdID, aabb, direction);
+                    Actor actor = Actor.CreateInstance(templateActor, acdID, acdID, aabb, direction, d3ACD.WorldID, d3ACD.SceneID);
                     actors.Add(actor);
                 }
             }
@@ -258,6 +378,34 @@ namespace libdiablo3.Api
             this.WalkableGrid = walkableGrid;
         }
 
+        private void UpdateUI()
+        {
+            // FIXME: Only run the full update once. Afterwards, traverse the
+            // tree checking for visibility changes, and stop descending when
+            // visible = false
+            if (this.uiObjects != null)
+                return;
+
+            Dictionary<int, D3UIObject> d3UIObjects = memReader.GetUIObjects();
+            Dictionary<int, UIObject> uiObjects = new Dictionary<int,UIObject>(d3UIObjects.Count);
+
+            foreach (D3UIObject d3UIObj in d3UIObjects.Values)
+                uiObjects.Add(d3UIObj.ID, new UIObject(memReader, d3UIObj.Pointer, d3UIObj.ID, d3UIObj.Name, d3UIObj.VTable, d3UIObj.Visible));
+
+            foreach (D3UIObject d3UIObj in d3UIObjects.Values)
+            {
+                UIObject uiObj = uiObjects[d3UIObj.ID];
+                UIObject parent;
+                if (uiObjects.TryGetValue(d3UIObj.ParentID, out parent))
+                {
+                    uiObj.parent = parent;
+                    parent.children.Add(uiObj);
+                }
+            }
+
+            this.uiObjects = uiObjects;
+        }
+
         private void PlaceItem(D3ActorCommonData d3ACD)
         {
             switch ((ItemPlacement)d3ACD.Placement)
@@ -315,9 +463,10 @@ namespace libdiablo3.Api
         private Item CreateItem(D3ActorCommonData d3ACD)
         {
             Actor templateActor = ActorTemplates.Actors[d3ACD.SnoID];
-            ItemType type = ItemTypes.Types[ItemDefinitions.Definitions[(int)d3ACD.GBID]];
-            Item item = Item.CreateInstance((Item)templateActor, -1, d3ACD.AcdID, AABB.Zero,
-                Vector2f.Zero, type, d3ACD.Placement, d3ACD.InventoryX,
+            ItemDefinition itemDef = ItemDefinitions.Definitions[(int)d3ACD.GBID];
+            ItemType type = ItemTypes.Types[itemDef.ItemTypeHash];
+            Item item = Item.CreateInstance((Item)templateActor, itemDef, -1, d3ACD.AcdID, AABB.Zero,
+                Vector2f.Zero, d3ACD.WorldID, d3ACD.SceneID, type, d3ACD.Placement, d3ACD.InventoryX,
                 d3ACD.InventoryY);
             item.InstanceID = d3ACD.AcdID;
             return item;

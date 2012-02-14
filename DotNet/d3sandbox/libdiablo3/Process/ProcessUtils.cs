@@ -45,19 +45,23 @@ namespace libdiablo3.Process
             return output.ToString();
         }
 
-        public static string AsciiBytesToString(this byte[] buffer, int offset, int maxLength)
+        public static string AsciiBytesToString(byte[] buffer, int offset, int maxLength)
         {
-            int maxIndex = offset + maxLength;
-
-            for (int i = offset; i < maxIndex; i++)
+            int length = maxLength;
+            for (int i = offset; i < offset + maxLength; i++)
             {
-                /// Skip non-nulls.
-                if (buffer[i] != 0) continue;
-                /// First null we find, return the string.
-                return Encoding.ASCII.GetString(buffer, offset, i - offset);
+                if (buffer[i] == 0)
+                {
+                    length = i - offset;
+                    break;
+                }
             }
-            /// Terminating null not found. Convert the entire section from offset to maxLength.
-            return Encoding.ASCII.GetString(buffer, offset, maxLength);
+
+            unsafe
+            {
+                fixed (byte* pAscii = buffer)
+                    return new String((sbyte*)pAscii, offset, length);
+            }
         }
 
         /// <summary>

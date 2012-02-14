@@ -41,8 +41,6 @@
     <Compile Include="AI\AIPathFinder.cs" />
     <Compile Include="AI\AIState.cs" />
     <Compile Include="AI\AITask.cs" />
-    <Compile Include="AI\PriorityQueue.cs" />
-    <Compile Include="AI\PriorityQueueB.cs" />
     <Compile Include="Api\Actor.cs" />
     <Compile Include="Api\ActorCategory.cs" />
     <Compile Include="Api\ActorName.cs" />
@@ -52,6 +50,7 @@
     <Compile Include="Api\Experience.cs" />
     <Compile Include="Api\Inventory.cs" />
     <Compile Include="Api\Item.cs" />
+    <Compile Include="Api\ItemDefinition.cs" />
     <Compile Include="Api\ItemDefinitions.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -70,8 +69,11 @@
     <Compile Include="Api\Scene.cs" />
     <Compile Include="Api\NavCells.cs" />
     <Compile Include="Api\TeamType.cs" />
+    <Compile Include="Api\UIObject.cs" />
     <Compile Include="Api\World.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="PriorityQueue.cs" />
+    <Compile Include="PriorityQueueB.cs" />
     <Compile Include="Process\D3Actor.cs" />
     <Compile Include="Process\D3ActorCommonData.cs" />
     <Compile Include="Process\D3AttributeMap.cs" />
@@ -80,6 +82,7 @@
     <Compile Include="Process\D3Scene.cs" />
     <Compile Include="Process\D3Attribute.cs" />
     <Compile Include="Process\D3Attribute.List.cs" />
+    <Compile Include="Process\D3UIObject.cs" />
     <Compile Include="Process\Injector.cs" />
     <Compile Include="Process\MemoryReader.cs" />
     <Compile Include="Process\MemoryReadException.cs" />

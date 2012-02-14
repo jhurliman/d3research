@@ -28,6 +28,8 @@ namespace libdiablo3.Process
         public Vector3f Pos2;
         /// <summary>World that this actor exists in</summary>
         public uint WorldID;
+        /// <summary>Scene that this actor exists in</summary>
+        public uint SceneID;
         /// <summary>ID of the actor that owns this object</summary>
         public int OwnerID;
         /// <summary>Where this item is located, if it is an item belonging to
@@ -57,6 +59,7 @@ namespace libdiablo3.Process
             this.Pos1 = new Vector3f(data, 0xD0);
             this.Pos2 = new Vector3f(data, 0xE0);
             this.WorldID = BitConverter.ToUInt32(data, 0x108);
+            this.SceneID = BitConverter.ToUInt32(data, 0x10C);
             this.OwnerID = BitConverter.ToInt32(data, 0x110);
             this.Placement = BitConverter.ToInt32(data, 0x114);
             this.InventoryX = BitConverter.ToInt32(data, 0x118);

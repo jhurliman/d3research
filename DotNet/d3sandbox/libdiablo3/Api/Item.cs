@@ -42,7 +42,7 @@ namespace libdiablo3.Api
     }
 
     [Flags]
-    public enum ItemFlags
+    public enum ItemFlags : int
     {
         NotEquipable1 = 0x1,
         AtLeastMagical = 0x2,
@@ -57,7 +57,7 @@ namespace libdiablo3.Api
         Monk = 0x2000,
     }
 
-    public enum ItemQuality
+    public enum ItemQuality : int
     {
         Invalid = -1,
         Inferior,
@@ -114,6 +114,7 @@ namespace libdiablo3.Api
     public class Item : Actor
     {
         public ItemType ItemType { get; internal set; }
+        public ItemDefinition ItemDefinition { get; internal set; }
         public ItemPlacement Placement { get; internal set; }
         public int InventoryX { get; internal set; }
         public int InventoryY { get; internal set; }
@@ -143,15 +144,19 @@ namespace libdiablo3.Api
         {
         }
 
-        internal static Item CreateInstance(Item template, int instanceID, int acdID, AABB aabb,
-            Vector2f direction, ItemType type, int placement, int inventoryX, int inventoryY)
+        internal static Item CreateInstance(Item template, ItemDefinition itemDef, int instanceID, int acdID,
+            AABB aabb, Vector2f direction, uint worldID, uint sceneID, ItemType type, int placement,
+            int inventoryX, int inventoryY)
         {
             Item item = template.MemberwiseClone() as Item;
+            item.ItemDefinition = itemDef;
             item.ItemType = type;
             item.InstanceID = instanceID;
             item.AcdID = acdID;
             item.BoundingBox = aabb;
             item.Direction = direction;
+            item.WorldID = worldID;
+            item.SceneID = sceneID;
             item.Placement = (ItemPlacement)placement;
             item.InventoryX = inventoryX;
             item.InventoryY = inventoryY;

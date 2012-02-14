@@ -171,17 +171,13 @@ namespace libdiablo3.Process
             Dictionary<int, D3Actor> actors = new Dictionary<int,D3Actor>(arraySize);
             for (uint i = 0; i < arraySize; i++)
             {
-                uint ptr = Offsets.INVALID;
-                while (true)
+                uint ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_RACTOR * (uint)(i & ((1 << v1) - 1));
+                if (ReadUInt(ptr) != Offsets.INVALID)
                 {
-                    ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_RACTOR * (uint)(i & ((1 << v1) - 1));
-                    if (ReadUInt(ptr) != Offsets.INVALID)
-                        break;
+                    D3Actor actor = GetActor(ptr);
+                    if (actor != null)
+                        actors.Add(actor.ActorID, actor);
                 }
-
-                D3Actor actor = GetActor(ptr);
-                if (actor != null)
-                    actors.Add(actor.ActorID, actor);
             }
 
             return actors;
@@ -200,17 +196,13 @@ namespace libdiablo3.Process
             Dictionary<int, D3ActorCommonData> acds = new Dictionary<int, D3ActorCommonData>(arraySize);
             for (uint i = 0; i < arraySize; i++)
             {
-                uint ptr = Offsets.INVALID;
-                while (true)
+                uint ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_ACD * (uint)(i & ((1 << v1) - 1));
+                if (ReadUInt(ptr) != Offsets.INVALID)
                 {
-                    ptr = ReadUInt(v0 + 4 * (i >> v1)) + Offsets.SIZEOF_ACD * (uint)(i & ((1 << v1) - 1));
-                    if (ReadUInt(ptr) != Offsets.INVALID)
-                        break;
+                    D3ActorCommonData acd = GetACD(ptr);
+                    if (acd != null)
+                        acds.Add(acd.AcdID, acd);
                 }
-
-                D3ActorCommonData acd = GetACD(ptr);
-                if (acd != null)
-                    acds.Add(acd.AcdID, acd);
             }
 
             return acds;
@@ -338,7 +330,7 @@ namespace libdiablo3.Process
         {
             uint id = ProcessUtils.HashLowerCase(uiHandle);
             uint index = id & 0x7FF;
-            uint uiPtrArray = ReadUInt(ReadUInt(pUI) + 8);
+            uint uiPtrArray = ReadUInt(ReadUInt(pUI) + Offsets.UI_ARRAY_PTR_OFFSET);
             uint lastAddr = ReadUInt(uiPtrArray + (index * 4));
 
             while (true)
@@ -346,15 +338,43 @@ namespace libdiablo3.Process
                 if (lastAddr == 0)
                     return Offsets.INVALID;
 
-                uint nextAddr = ReadUInt(ReadUInt(lastAddr + Offsets.UI_1_OFFSET) + Offsets.UI_2_OFFSET);
+                uint nextAddr = ReadUInt(ReadUInt(lastAddr + Offsets.UI_OBJ_PTR_OFFSET) + Offsets.UI_2_OFFSET);
                 if (nextAddr == id)
-                    return ReadUInt(lastAddr + Offsets.UI_3_OFFSET);
+                    return ReadUInt(lastAddr + Offsets.UI_OBJ_PTR_OFFSET);
 
                 lastAddr = ReadUInt(lastAddr);
             }
         }
 
-        public string GetTextboxValue(string uiHandle)
+        public Dictionary<int, D3UIObject> GetUIObjects()
+        {
+            uint uiObjMgr = ReadUInt(pUI);
+            uint uiPtrArray = ReadUInt(uiObjMgr + Offsets.UI_ARRAY_PTR_OFFSET);
+            uint capacity = ReadUInt(uiObjMgr + Offsets.UI_ARRAY_CAPACITY_OFFSET);
+            int count = ReadInt(uiObjMgr + Offsets.UI_ARRAY_SIZE_OFFSET);
+
+            Dictionary<int, D3UIObject> objects = new Dictionary<int, D3UIObject>(count);
+
+            for (uint i = 0; i < capacity; i++)
+            {
+                uint uiListPtr = ReadUInt(uiPtrArray + i * 4);
+
+                while (uiListPtr != 0)
+                {
+                    uint uiObjPtr = ReadUInt(uiListPtr + 0x20C);
+                    byte[] uiObjData = ReadBytes(uiObjPtr, 564);
+
+                    D3UIObject uiObj = new D3UIObject(this, uiObjPtr, uiObjData);
+                    objects.Add(uiObj.ID, uiObj);
+
+                    uiListPtr = ReadUInt(uiListPtr);
+                }
+            }
+
+            return objects;
+        }
+
+        public string GetUITextValue(string uiHandle)
         {
             uint ptr = GetUIPtr(uiHandle);
             if (ptr == Offsets.INVALID)
